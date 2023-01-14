@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM dr.parswitch.com/python:3_10
 
 WORKDIR /app/
 ENV PYTHONPATH=/app

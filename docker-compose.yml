@@ -15,7 +15,7 @@ services:
       - ./app:/app/
 
   queue:
-    image: rabbitmq
+    image: dr.parswitch.com/rabbitmq:3
     ports:
       - "5672:5672"
 
