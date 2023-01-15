@@ -1,7 +1,8 @@
 FROM dr.parswitch.com/python:3_10
 
 WORKDIR /app/
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/app/app/
+
 
 # Install Poetry version 1
 RUN pip install poetry fastapi uvicorn gunicorn
@@ -20,7 +21,5 @@ RUN pip install -r requirements.txt
 # Copy poetry.lock* in case it doesn't exist in the repo
 COPY ./app/pyproject.toml ./app/poetry.lock /app/
 
-COPY ./gunicorn_conf.py ./start-server.sh  /
-COPY ./app .
-CMD [ "bash", "/start-server.sh" ]
-
+COPY ./app/ /app/
+CMD ["python", "/app/app/utils/schedule.py"]
