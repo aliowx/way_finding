@@ -8,7 +8,6 @@ class Settings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
-    POSTGRES_PORT: str
 
     PROJECT_NAME: str
     API_V1_STR: str = "/api/v1"
