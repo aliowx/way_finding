@@ -8,7 +8,7 @@ services:
     env_file:
       - .env
     ports:
-      - 5432:5432
+      - 5433:5432
     environment:
       - PGDATA=/var/lib/postgresql/data
 
@@ -16,4 +16,4 @@ services:
     image: dr.parswitch.com/redis:7.0.5
     restart: always
     ports:
-      - 6379:6379
+      - 6380:6379
