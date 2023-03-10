@@ -1,4 +1,6 @@
-FROM dr.parswitch.com/python:3_10
+FROM dr2.parswitch.com/devops/python:3-10
+
+# FROM dr.parswitch.com/python:3_10
 
 WORKDIR /app/
 

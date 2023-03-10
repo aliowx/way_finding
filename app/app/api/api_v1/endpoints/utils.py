@@ -1,6 +1,7 @@
 from typing import Any
 from fastapi import APIRouter, Depends, WebSocket
 from fastapi.responses import HTMLResponse
+from celery.result import AsyncResult
 
 from app import models, schemas
 from app.api import deps
@@ -16,8 +17,23 @@ def test_celery(
     """
     Test Celery worker.
     """
-    celery_app.send_task("app.worker.test_celery", args=[msg.msg])
-    return {"msg": "Word received"}
+    task = celery_app.send_task("app.worker.test_celery", args=[msg.msg])
+    return {
+        "msg": f"{msg.msg} - {task.id}",
+    }
+
+
+@router.get("/result/{task_id}")
+def result(task_id):
+    task = AsyncResult(task_id)
+    if not task.ready():
+        return JSONResponse(status_code=202,
+                            content={'task_id': str(task_id),
+                                     'task_status': 'Processing'})
+    result = task.get()
+    return {'task_id': task_id,
+            'task_status': 'Success',
+            'outcome': str(result)}
 
 
 @router.websocket("/echo-client/")
