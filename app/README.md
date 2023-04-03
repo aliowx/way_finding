@@ -50,10 +50,6 @@ apply migration with:
 ```commandline
 alembic upgrade head
 ```
-run project with:
-```
-poetry run uvicorn app.main:app --reload
-```
 ## Setup project in local
 you must create .env file in backend/app and filled it with .env.example
 

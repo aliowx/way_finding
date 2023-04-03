@@ -6,6 +6,8 @@ from celery.result import AsyncResult
 from app import models, schemas
 from app.api import deps
 from app.core.celery_app import celery_app
+from cache import Cache
+
 
 router = APIRouter()
 
@@ -23,17 +25,19 @@ def test_celery(
     }
 
 
-@router.get("/result/{task_id}")
-def result(task_id):
-    task = AsyncResult(task_id)
-    if not task.ready():
-        return JSONResponse(status_code=202,
-                            content={'task_id': str(task_id),
-                                     'task_status': 'Processing'})
-    result = task.get()
-    return {'task_id': task_id,
-            'task_status': 'Success',
-            'outcome': str(result)}
+@router.get("/test-redis/", status_code=201)
+async def test_redis(
+    
+) -> Any:
+    """
+    Test redis connection.
+    """
+    try:
+        redis_cache = Cache()
+        if redis_cache.connected:
+            return {"msg": "Redis connection works."}
+    except Exception as e:
+        return {"msg": f"ERROR: {str(e)}"}
 
 
 @router.websocket("/echo-client/")

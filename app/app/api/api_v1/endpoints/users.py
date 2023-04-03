@@ -15,11 +15,16 @@ from app.core.security import get_password_hash
 from app.utils.user import (
     verify_password_reset_token,
 )
+from cache import cache, invalidate
+from cache.util import ONE_DAY_IN_SECONDS
+
 
 router = APIRouter()
+namespace = 'user'
 
 
 @router.post("/login/access-token", response_model=schemas.Token)
+@cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
 def login_access_token(
     db: Session = Depends(deps.get_db), form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Any:
@@ -80,6 +85,7 @@ def reset_password(
 
 
 @router.get("/", response_model=List[schemas.User])
+@cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
 def read_users(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
@@ -149,6 +155,7 @@ def read_user_me(
 
 
 @router.post("/open", response_model=schemas.User)
+@invalidate(namespace=namespace)
 def create_user_open(
     *,
     db: Session = Depends(deps.get_db),
@@ -176,6 +183,7 @@ def create_user_open(
 
 
 @router.get("/{user_id}", response_model=schemas.User)
+@cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
 def read_user_by_id(
     user_id: int,
     current_user: models.User = Depends(deps.get_current_active_user),

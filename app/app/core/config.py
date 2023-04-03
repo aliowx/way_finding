@@ -24,6 +24,12 @@ class Settings(BaseSettings):
     RABBITMQ_HOST: str
     RABBITMQ_PORT: str
 
+    REDIS_SERVER: str
+    REDIS_PORT: int
+    REDIS_PASSWORD: str
+    REDIS_TIMEOUT: Optional[int] = 5
+
+
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
@@ -45,6 +51,7 @@ class Settings(BaseSettings):
             host=values.get("POSTGRES_SERVER"),
             path=f"/{values.get('POSTGRES_DB') or ''}",
         )
+
     class Config:
         env_file = ".env"
 
