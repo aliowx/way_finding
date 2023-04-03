@@ -21,6 +21,9 @@ persiantools = "^3.0.1"
 python-multipart = "^0.0.5"
 tenacity = "^8.1.0"
 rocketry = "^2.5.1"
+fakeredis = "^2.10.0"
+aioredis = "^2.0.1"
+redis = "^4.5.1"
 
 
 [build-system]
