@@ -14,35 +14,12 @@ services:
       - "8091:80"
     volumes:
       - ./app:/app/
-    environment:
-      - POSTGRES_SERVER=${POSTGRES_SERVER}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-    depends_on:
-      - db
-    
-  db:
-    image: dr2.parswitch.com/devops/postgres:14
-    container_name: postgres
-    restart: always
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    env_file:
-      - .env
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-    ports:
-      - "5433:5432"
-  
+
   queue:
     image: dr2.parswitch.com/devops/rabbitmq:3
     container_name: rabbitmq
     ports:
       - "5672:5672"
-
 
   celery-worker:
     image: celery-img
@@ -71,6 +48,3 @@ services:
       - backend
     env_file:
       - .env
-
-volumes:
-  postgres-data:
