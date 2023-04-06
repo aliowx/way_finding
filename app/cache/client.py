@@ -135,10 +135,8 @@ class Cache(metaclass=MetaSingleton):
         return self.get_etag(cached_data) in check_etags
 
     async def add_to_cache(self, key: str, value: Dict, expire: int) -> bool:
-
-        response_data = None
         try:
-            if response_data == List:
+            if isinstance(value, Response):
                 response_data = value.body
             else:
                 response_data = serialize_json(value)
