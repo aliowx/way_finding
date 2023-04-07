@@ -29,6 +29,7 @@ If you get some errors like 'port already in use' for postgres or redis you can 
 you should run the following command : 
 ```dockerfile
 docker-compose up -d --build
+```
 
 
 ## TODO List:
