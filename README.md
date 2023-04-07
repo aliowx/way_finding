@@ -11,9 +11,6 @@ Create an **.env** file on root folder and copy the content from **.env.example*
 
 ### Run the project using Docker containers and forcing build containers
 
-docker services:
-- **transport**: main project service
-- **rocketry-worker**: tool for generating schedular reports
 ###  Project structure description:
 **docker-compose-dev.yml**: a container for postgres and redis services
 - When you want to build the project you should use this file to have dockerized postgres and redis attached to the project.
@@ -25,7 +22,7 @@ docker-compose -f docker-compose-dev.yml up -d --build
 If you get some errors like 'port already in use' for postgres or redis you can change the external port.
 
 **docker-compose.yml**:
-- Main docker-compose file for building transport service.For running transport container after  building postgres and redis 
+- Main docker-compose file for building service.For running container after  building postgres and redis 
 you should run the following command : 
 ```dockerfile
 docker-compose up -d --build
