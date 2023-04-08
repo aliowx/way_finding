@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.api_v1.api import api_router
 from app.core.config import settings
 from app.models import User
+from app import exceptions
 from cache import Cache
 
 app = FastAPI(
@@ -24,6 +25,13 @@ if settings.BACKEND_CORS_ORIGINS:
     )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+app.add_exception_handler(*exceptions.http_exceptions)
+app.add_exception_handler(*exceptions.custom_exception)
+app.add_exception_handler(*exceptions.http_request_exceptions)
+app.add_exception_handler(*exceptions.httpx_request_exceptions)
+app.add_exception_handler(*exceptions.httpx_http_exceptions)
+app.add_exception_handler(*exceptions.httpx_connect_exceptions)
 
 
 @app.on_event("startup")
