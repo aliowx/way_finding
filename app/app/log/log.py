@@ -52,7 +52,7 @@ async def save_request_log_async(
         "trace": trace_back,
     }
 
-    request_log_in = schemas.request_log.RequestLogCreate(**request_log_data)
+    request_log_in = schemas.RequestLogCreate(**request_log_data)
     async with async_session() as db:
         await crud.request_log.create(db=db, obj_in=request_log_in)
         await db.commit()
@@ -87,7 +87,7 @@ async def save_ws_request_log_async(
         "status_code": response.status_code,
     }
 
-    ws_request_log_in = schemas.ws_request_log.WSRequestLogCreate(**ws_request_log_data)
+    ws_request_log_in = schemas.WSRequestLogCreate(**ws_request_log_data)
     async with async_session() as db:
         await crud.ws_request_log.create(db=db, obj_in=ws_request_log_in)
         await db.commit()
