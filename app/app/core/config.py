@@ -33,7 +33,6 @@ class Settings(BaseSettings):
     REDIS_PASSWORD: str
     REDIS_TIMEOUT: Optional[int] = 5
 
-
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
@@ -57,11 +56,13 @@ class Settings(BaseSettings):
             host=values.get("POSTGRES_SERVER"),
             path=f"/{values.get('POSTGRES_DB') or ''}",
         )
-    
+
     SQLALCHEMY_DATABASE_ASYNC_URI: Optional[AsyncPostgresDsn] = None
-    
+
     @validator("SQLALCHEMY_DATABASE_ASYNC_URI", pre=True)
-    def assemble_async_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
+    def assemble_async_db_connection(
+        cls, v: Optional[str], values: Dict[str, Any]
+    ) -> Any:
         if isinstance(v, str):
             return v
         return AsyncPostgresDsn.build(

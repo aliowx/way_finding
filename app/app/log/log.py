@@ -16,9 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 async def save_request_log_async(
-        request: Request,
-        response: Response = None,
-        trace_back: str = ""
+    request: Request, response: Response = None, trace_back: str = ""
 ) -> None:
     authorization = request.headers.get("authorization")
     client_host = request.client.host
@@ -59,8 +57,8 @@ async def save_request_log_async(
 
 
 async def save_ws_request_log_async(
-        request: httpx.Request,
-        response: httpx.Response,
+    request: httpx.Request,
+    response: httpx.Response,
 ) -> None:
     authorization = request.headers.get("Authorization")
     service_name = request.url.path

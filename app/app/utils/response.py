@@ -10,6 +10,7 @@ class CustomResponse(JSONResponse):
     Custom reponse class
     Adds custom header, messages to reponses
     """
+
     def __init__(self, data, msg_code=0, msg_status=0, **kwargs):
         """
         msg_status -> 0: successful -- 1: external error -- 2: internal error

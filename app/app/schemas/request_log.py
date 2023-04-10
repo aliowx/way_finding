@@ -4,7 +4,6 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-
 class RequestLogInDBBase(BaseModel):
     id: int
     created: datetime

@@ -11,6 +11,7 @@ from cache import Cache
 
 router = APIRouter()
 
+
 @router.post("/test-celery/", response_model=schemas.Msg, status_code=201)
 def test_celery(
     msg: schemas.Msg,
@@ -26,9 +27,7 @@ def test_celery(
 
 
 @router.get("/test-redis/", status_code=201)
-async def test_redis(
-    
-) -> Any:
+async def test_redis() -> Any:
     """
     Test redis connection.
     """

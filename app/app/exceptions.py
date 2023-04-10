@@ -10,8 +10,8 @@ from requests import RequestException
 from starlette.background import BackgroundTask
 
 from app.utils import utils
-from app.utils.response import CustomResponse
 from app.log import log
+
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,10 @@ def get_error_log_background_task(
     request: Request, trace_back: str, response: Response = None
 ):
     task = BackgroundTask(
-        log.save_request_log_async, request=request, response=response, trace_back=trace_back
+        log.save_request_log_async,
+        request=request,
+        response=response,
+        trace_back=trace_back,
     )
     return task
 
@@ -44,7 +47,7 @@ async def custom_exception_handler(request: Request, exc: Any):
     exception_type, traceback_str, traceback_full = get_traceback_info(exc)
     logger.error(f"Internal service error{exception_type}:\n{traceback_str}")
 
-    response = CustomResponse(
+    response = utils.CustomResponse(
         data=exc.data,
         msg_code=exc.msg_code,
         msg_status=exc.msg_status,
@@ -60,8 +63,10 @@ async def custom_exception_handler(request: Request, exc: Any):
 async def http_exception_handler(request: Request, exc: Any):
     _, _, traceback_full = get_traceback_info(exc)
 
-    response = CustomResponse(
-        data={"detail": str(exc).strip()} if str(exc).strip() else {"message": "Internal Server Error"},
+    response = utils.CustomResponse(
+        data={"detail": str(exc).strip()}
+        if str(exc).strip()
+        else {"message": "Internal Server Error"},
         msg_code=utils.MessageCodes.Internal_Error,
         msg_status=2,
         status_code=exc.status_code,
@@ -77,8 +82,10 @@ async def http_request_exceptions_handler(request: Request, exc: Any):
     exception_type, traceback_str, _ = get_traceback_info(exc)
     logger.error(f"Http Request {exception_type} Exception Happened:\n{traceback_str}")
 
-    response = CustomResponse(
-        data={"detail": str(exc).strip()} if str(exc).strip() else {"message": "External Error"},
+    response = utils.CustomResponse(
+        data={"detail": str(exc).strip()}
+        if str(exc).strip()
+        else {"message": "External Error"},
         msg_code=utils.MessageCodes.External_Error,
         msg_status=1,
         status_code=503,
@@ -94,8 +101,10 @@ async def internal_exceptions_handler(request: Request, exc: Any):
     exception_type, traceback_str, traceback_full = get_traceback_info(exc)
     logger.error(f"Unhandled {exception_type} Exception Happened:\n{traceback_str}")
 
-    response = CustomResponse(
-        data={"detail": str(exc).strip()} if str(exc).strip() else {"message": "Internal Server Error"},
+    response = utils.CustomResponse(
+        data={"detail": str(exc).strip()}
+        if str(exc).strip()
+        else {"message": "Internal Server Error"},
         msg_code=utils.MessageCodes.Internal_Error,
         msg_status=2,
         status_code=500,

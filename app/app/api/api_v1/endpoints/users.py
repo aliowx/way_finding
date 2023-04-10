@@ -15,18 +15,21 @@ from app.core.security import get_password_hash
 from app.utils.user import (
     verify_password_reset_token,
 )
+from app.exceptions import CustomException
+from app.utils import CustomResponse
 from cache import cache, invalidate
 from cache.util import ONE_DAY_IN_SECONDS
 
 
 router = APIRouter()
-namespace = 'user'
+namespace = "user"
 
 
 @router.post("/login/access-token", response_model=schemas.Token)
 @cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
 async def login_access_token(
-    db: AsyncSession = Depends(deps.get_db_async), form_data: OAuth2PasswordRequestForm = Depends()
+    db: AsyncSession = Depends(deps.get_db_async),
+    form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> Any:
     """
     OAuth2 compatible token login, get an access token for future requests
@@ -95,7 +98,9 @@ async def read_users(
     Retrieve users.
     """
     users = await crud.user.get_multi(db, skip=skip, limit=limit)
-    return users
+
+    # you can use custom response instead of normal response.
+    return CustomResponse(users)
 
 
 @router.post("/", response_model=schemas.User)
@@ -115,7 +120,7 @@ async def create_user(
             status_code=400,
             detail="The user with this username already exists in the system.",
         )
-    
+
     user = await crud.user.create(db, obj_in=user_in)
     return user
 
@@ -199,8 +204,15 @@ async def read_user_by_id(
     if user == current_user:
         return user
     if not crud.user.is_superuser(current_user):
-        raise HTTPException(
-            status_code=400, detail="The user doesn't have enough privileges"
+        # raise HTTPException(
+        #     status_code=400, detail="The user doesn't have enough privileges"
+        # )
+
+        # you can use custom exception instead of normal exception.
+        raise CustomException(
+            data={"detail": "The user doesn't have enough privileges"},
+            status_code=400,
+            msg_status=1,
         )
     return user
 
@@ -223,7 +235,7 @@ async def update_user(
             status_code=404,
             detail="The user with this username does not exist in the system",
         )
-    
+
     if await crud.user.get_by_email(db, email=user_in.email) and not user:
         raise HTTPException(
             status_code=400,
