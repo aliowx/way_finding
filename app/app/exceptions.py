@@ -9,7 +9,7 @@ from httpx import HTTPError, RequestError, ConnectError
 from requests import RequestException
 from starlette.background import BackgroundTask
 
-from app.utils import utils
+from app import utils
 from app.log import log
 
 

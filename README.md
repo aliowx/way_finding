@@ -30,12 +30,13 @@ docker-compose up -d --build
 
 
 ## TODO List:
-- [ ] Add Custom Exception handler
+- [ x ] Add Custom Exception handler
 - [ ] Add jsonb field on table sample
-- [ ] Add docstrings
-- [ ] Add Custom Response model
+- [ x ] Add docstrings
+- [ x ] Add Custom Response model
 - [ ] Create sample one to many relationship
 - [ ] Create sample many to many relationship
-- [ ] Add Black formatter and flake8 lint
+- [ x ] Add Black formatter and flake8 lint
 - [ ] Add export report api in csv/xlsx files using StreamingResponse
 - [ ] Convert repo into template using cookiecutter
+- [ ] Add tests for APIs
