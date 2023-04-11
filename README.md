@@ -1,5 +1,4 @@
 # fastapi-postgres-boilerplate
-# fastapi-postgres-boilerplate
 This project template which uses FastAPi, Alembic, SQLAlchemy as ORM, Rocketry as scheduler, Celery as async task manager. It shows a complete async CRUD template. Also I setup cache app with invalidate feature. 
 
 
@@ -28,15 +27,19 @@ you should run the following command :
 docker-compose up -d --build
 ```
 
+## Cache
+If you want to use cache in your project, it is better to read it's documentation first:
+[cache document](/app/cache/cache-doc)
+
 
 ## TODO List:
-- [ x ] Add Custom Exception handler
+- [x] Add Custom Exception handler
 - [ ] Add jsonb field on table sample
-- [ x ] Add docstrings
-- [ x ] Add Custom Response model
+- [x] Add docstrings
+- [x] Add Custom Response model
 - [ ] Create sample one to many relationship
 - [ ] Create sample many to many relationship
-- [ x ] Add Black formatter and flake8 lint
+- [x] Add Black formatter and flake8 lint
 - [ ] Add export report api in csv/xlsx files using StreamingResponse
 - [ ] Convert repo into template using cookiecutter
 - [ ] Add tests for APIs
