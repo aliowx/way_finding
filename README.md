@@ -29,7 +29,7 @@ docker-compose up -d --build
 
 ## Cache
 If you want to use cache in your project, it is better to read it's documentation first:
-[cache document](/app/cache/cache-doc)
+[cache document](/app/cache/cache-doc.md)
 
 
 ## TODO List:
