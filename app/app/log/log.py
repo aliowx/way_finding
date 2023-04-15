@@ -2,8 +2,6 @@ import logging
 import json
 from typing import Callable
 
-import httpx
-
 from fastapi import Request, BackgroundTasks
 from fastapi.routing import APIRoute
 from fastapi.responses import Response
@@ -53,41 +51,6 @@ async def save_request_log_async(
     request_log_in = schemas.RequestLogCreate(**request_log_data)
     async with async_session() as db:
         await crud.request_log.create(db=db, obj_in=request_log_in)
-        await db.commit()
-
-
-async def save_ws_request_log_async(
-    request: httpx.Request,
-    response: httpx.Response,
-) -> None:
-    authorization = request.headers.get("Authorization")
-    service_name = request.url.path
-    method = request.method
-    response_data = str(response.text) or None
-    query_params = request.url.query
-    request_data = {
-        "url": str(request.url),
-        "body": "",
-        "query_params": query_params,
-    }
-
-    try:
-        request_data["body"] = request.content
-    except Exception as e:
-        pass
-
-    ws_request_log_data = {
-        "authorization": authorization,
-        "request": str(request_data),
-        "response": response_data,
-        "service_name": service_name,
-        "method": method,
-        "status_code": response.status_code,
-    }
-
-    ws_request_log_in = schemas.WSRequestLogCreate(**ws_request_log_data)
-    async with async_session() as db:
-        await crud.ws_request_log.create(db=db, obj_in=ws_request_log_in)
         await db.commit()
 
 

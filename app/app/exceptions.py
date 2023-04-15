@@ -90,10 +90,7 @@ async def http_request_exceptions_handler(request: Request, exc: Any):
         msg_status=1,
         status_code=503,
     )
-    log_ws_background_task = BackgroundTask(
-        log.save_ws_request_log_async, request=request, response=response
-    )
-    response.background = log_ws_background_task
+    
     return response
 
 
