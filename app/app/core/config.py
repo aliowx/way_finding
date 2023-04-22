@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str
+    DEBUG: bool = False
 
     USERS_OPEN_REGISTRATION: bool = True
     SECRET_KEY: str

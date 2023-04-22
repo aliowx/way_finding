@@ -1,30 +1,96 @@
+from abc import ABC
+from typing import Generic, TypeVar
+
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
+from pydantic import Field
+from pydantic.generics import GenericModel
 from starlette.responses import Response
 
-from app.utils import utils
+from app import utils
+
+T = TypeVar("T")
 
 
-class CustomResponse(JSONResponse):
+class ApiResponseHeader(GenericModel, Generic[T], ABC):
+    """Header type of APIResponseType"""
+
+    status: int = 0
+    message: str = "Successful Operation"
+    persianMessage: str = "عملیات موفق"
+    messageCode: int = Field(
+        ..., description=str(utils.MessageCodes.messages_names)
+    )
+
+
+class PaginatedContent(GenericModel, Generic[T]):
+    """Content data type for lists with pagination"""
+
+    data: T
+    total_count: int = 0
+    limit: int = 100
+    offset: int = 0
+
+
+class APIResponseType(GenericModel, Generic[T]):
     """
-    Custom reponse class
+    an api response type for using as the api's router response_model
+    use this for apis that use our APIResponse class for their output
+    """
+
+    header: ApiResponseHeader
+    content: T | None
+
+
+class APIResponse(GenericModel, Generic[T]):
+    """
+    Custom reponse class for apis
     Adds custom header, messages to reponses
     """
 
-    def __init__(self, data, msg_code=0, msg_status=0, **kwargs):
-        """
-        msg_status -> 0: successful -- 1: external error -- 2: internal error
-        """
-        response_data = {
-            "Header": {
-                "Status": msg_status,
-                "MessageCode": msg_code,
-                "Message": utils.MessageCodes.messages_names[msg_code],
-                "PersianMessage": utils.MessageCodes.persian_messages_names[msg_code],
-            },
-            "ContentData": jsonable_encoder(data),
+    header: ApiResponseHeader
+    content: T | None
+
+    def __new__(
+        cls, data: T, *args, msg_code: int = 0, msg_status: int = 0, **kwargs
+    ):
+        if data:
+            if isinstance(data, Response):
+                return data
+        cls.header = {
+            "status": msg_status,
+            "message": utils.MessageCodes.messages_names[msg_code],
+            "persianMessage": utils.MessageCodes.persian_message_names[
+                msg_code
+            ],
+            "messageCode": msg_code,
         }
-        super().__init__(response_data, **kwargs)
+        cls.content = data
+        return {
+            "header": cls.header,
+            "content": cls.content,
+        }
+
+
+class APIErrorResponse(JSONResponse):
+    """
+    Custom error reponse class for apis
+    Adds custom header, messages to error reponses
+    """
+
+    def __init__(self, data, msg_code=0, msg_status=0, **kwargs):
+        self.response_data = {
+            "header": {
+                "status": msg_status,
+                "message": utils.MessageCodes.messages_names[msg_code],
+                "persianMessage": utils.MessageCodes.persian_message_names[
+                    msg_code
+                ],
+                "messageCode": msg_code,
+            },
+            "content": jsonable_encoder(data),
+        }
+        super().__init__(self.response_data, **kwargs)
 
     def __new__(cls, *args, **kwargs):
         """

@@ -27,7 +27,9 @@ def test_celery(
 
 
 @router.get("/test-redis/", status_code=201)
-async def test_redis() -> Any:
+async def test_redis(
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
     """
     Test redis connection.
     """

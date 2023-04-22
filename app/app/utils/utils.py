@@ -6,27 +6,6 @@ from typing import Tuple
 import jdatetime
 
 
-class MessageCodes:
-    Successful_Operation = 0
-    Internal_Error = 1
-    External_Error = 2
-    Invalid_Data_Request = 3
-
-    messages_names = {
-        0: "Successful Operation",
-        1: "Internal Error",
-        2: "External Error",
-        3: "Invalid Data Request",
-    }
-
-    persian_messages_names = {
-        0: "عملیات موفق",
-        1: "خطای داخلی",
-        2: "خطای خارجی",
-        3: "ورودی نامعتبر است",
-    }
-
-
 def last_jmonth_period(
     j_now: jdatetime.datetime,
 ) -> Tuple[jdatetime.datetime, jdatetime.datetime]:
