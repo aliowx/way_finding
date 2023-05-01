@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
@@ -85,15 +85,24 @@ async def reset_password(
     """
     id_ = verify_password_reset_token(token)
     if not id_:
-        raise HTTPException(status_code=400, detail="Invalid token")
+        raise exc.InternalServiceError(
+            status_code=400,
+            detail="Invalid token.",
+            msg_code=utils.MessageCodes.bad_request
+        )
     user = await crud.user.get(db, id=int(id_))
     if not user:
-        raise HTTPException(
-            status_code=404,
+        raise exc.InternalServiceError(
+            status_code=400,
             detail="The user with this username does not exist in the system.",
+            msg_code=utils.MessageCodes.bad_request
         )
     elif not crud.user.is_active(user):
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise exc.InternalServiceError(
+            status_code=400,
+            detail="Inactive user.",
+            msg_code=utils.MessageCodes.bad_request
+        )
     hashed_password = get_password_hash(new_password)
     user.hashed_password = hashed_password
     db.add(user)
@@ -113,8 +122,6 @@ async def read_users(
     Retrieve users.
     """
     users = await crud.user.get_multi(db, skip=skip, limit=limit)
-
-    # you can use custom response instead of normal response.
     return APIResponse(users)
 
 
@@ -165,46 +172,6 @@ async def update_user_me(
     return APIResponse(user)
 
 
-@router.get("/me")
-@cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
-async def read_user_me(
-    db: AsyncSession = Depends(deps.get_db_async),
-    current_user: models.User = Depends(deps.get_current_active_user),
-) -> APIResponseType[schemas.User]:
-    """
-    Get current user.
-    """
-    return APIResponse(current_user)
-
-
-@router.post("/open")
-@invalidate(namespace=namespace)
-async def create_user_open(
-    *,
-    db: read_user_me = Depends(deps.get_db_async),
-    password: str = Body(...),
-    email: str = Body(...),
-    full_name: str = Body(None),
-) -> APIResponseType[schemas.User]:
-    """
-    Create new user without the need to be logged in.
-    """
-    if not settings.USERS_OPEN_REGISTRATION:
-        raise HTTPException(
-            status_code=403,
-            detail="Open user registration is forbidden on this server",
-        )
-    user = await crud.user.get_by_email(db, email=email)
-    if user:
-        raise HTTPException(
-            status_code=400,
-            detail="The user with this username already exists in the system",
-        )
-    user_in = schemas.UserCreate(password=password, email=email, full_name=full_name)
-    user = await crud.user.create(db, obj_in=user_in)
-    return APIResponse(user)
-
-
 @router.get("/{user_id}")
 @cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
 async def read_user_by_id(
@@ -234,7 +201,6 @@ async def read_user_by_id(
 
 
 @router.put("/{user_id}")
-@invalidate(namespace=namespace)
 async def update_user(
     *,
     db: AsyncSession = Depends(deps.get_db_async),
@@ -247,15 +213,10 @@ async def update_user(
     """
     user = await crud.user.get(db, id=user_id)
     if not user:
-        raise HTTPException(
+        raise exc.InternalServiceError(
             status_code=404,
             detail="The user with this username does not exist in the system",
-        )
-
-    if await crud.user.get_by_email(db, email=user_in.email) and not user:
-        raise HTTPException(
-            status_code=400,
-            detail="The email exists in the system",
+            msg_code=utils.MessageCodes.not_found,
         )
     user = await crud.user.update(db, db_obj=user, obj_in=user_in)
     return APIResponse(user)
