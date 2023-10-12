@@ -49,9 +49,7 @@ async def login_access_token(
             detail="Inactive user",
             msg_code=utils.MessageCodes.inactive_user,
         )
-    access_token_expires = timedelta(
-        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-    )
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
     return schemas.Token(
         access_token=security.create_access_token(
@@ -88,20 +86,20 @@ async def reset_password(
         raise exc.InternalServiceError(
             status_code=400,
             detail="Invalid token.",
-            msg_code=utils.MessageCodes.bad_request
+            msg_code=utils.MessageCodes.bad_request,
         )
     user = await crud.user.get(db, id=int(id_))
     if not user:
         raise exc.InternalServiceError(
             status_code=400,
             detail="The user with this username does not exist in the system.",
-            msg_code=utils.MessageCodes.bad_request
+            msg_code=utils.MessageCodes.bad_request,
         )
     elif not crud.user.is_active(user):
         raise exc.InternalServiceError(
             status_code=400,
             detail="Inactive user.",
-            msg_code=utils.MessageCodes.bad_request
+            msg_code=utils.MessageCodes.bad_request,
         )
     hashed_password = get_password_hash(new_password)
     user.hashed_password = hashed_password

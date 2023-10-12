@@ -21,9 +21,7 @@ def create_super_admin(db: Session) -> None:
     if not user:
         user = models.User(
             email=settings.FIRST_SUPERUSER,
-            hashed_password=get_password_hash(
-                settings.FIRST_SUPERUSER_PASSWORD
-            ),
+            hashed_password=get_password_hash(settings.FIRST_SUPERUSER_PASSWORD),
             is_superuser=True,
         )
         db.add(user)

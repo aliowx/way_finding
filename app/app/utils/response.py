@@ -18,9 +18,7 @@ class ApiResponseHeader(GenericModel, Generic[T], ABC):
     status: int = 0
     message: str = "Successful Operation"
     persianMessage: str = "عملیات موفق"
-    messageCode: int = Field(
-        ..., description=str(utils.MessageCodes.messages_names)
-    )
+    messageCode: int = Field(..., description=str(utils.MessageCodes.messages_names))
 
 
 class PaginatedContent(GenericModel, Generic[T]):
@@ -51,18 +49,14 @@ class APIResponse(GenericModel, Generic[T]):
     header: ApiResponseHeader
     content: T | None
 
-    def __new__(
-        cls, data: T, *args, msg_code: int = 0, msg_status: int = 0, **kwargs
-    ):
+    def __new__(cls, data: T, *args, msg_code: int = 0, msg_status: int = 0, **kwargs):
         if data:
             if isinstance(data, Response):
                 return data
         cls.header = {
             "status": msg_status,
             "message": utils.MessageCodes.messages_names[msg_code],
-            "persianMessage": utils.MessageCodes.persian_message_names[
-                msg_code
-            ],
+            "persianMessage": utils.MessageCodes.persian_message_names[msg_code],
             "messageCode": msg_code,
         }
         cls.content = data
@@ -83,9 +77,7 @@ class APIErrorResponse(JSONResponse):
             "header": {
                 "status": msg_status,
                 "message": utils.MessageCodes.messages_names[msg_code],
-                "persianMessage": utils.MessageCodes.persian_message_names[
-                    msg_code
-                ],
+                "persianMessage": utils.MessageCodes.persian_message_names[msg_code],
                 "messageCode": msg_code,
             },
             "content": jsonable_encoder(data),

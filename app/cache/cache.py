@@ -79,7 +79,7 @@ def cache(
                 )
             response_data = await get_api_response_async(func, *args, **kwargs)
             ttl = calculate_ttl(expire)
-            
+
             cached = await redis_cache.add_to_cache(key, response_data, ttl)
             return response_data
             if cached:
