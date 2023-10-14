@@ -18,9 +18,16 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         query = select(User).filter(User.email == email)
         return self._first(db.scalars(query))
 
-    async def create(self, db: Session | AsyncSession, *, obj_in: UserCreate) -> User:
+    async def create(
+        self, db: Session | AsyncSession, *, obj_in: UserCreate | dict
+    ) -> User:
+        if isinstance(obj_in, dict):
+            password = obj_in["password"]
+        else:
+            password = obj_in.password
+
         obj_in_data = jsonable_encoder(obj_in)
-        obj_in_data["hashed_password"] = get_password_hash(obj_in.password)
+        obj_in_data["hashed_password"] = get_password_hash(password)
         del obj_in_data["password"]
         obj_in_data = {k: v for k, v in obj_in_data.items() if v is not None}
         return await super().create(db, obj_in=obj_in_data)
@@ -30,8 +37,8 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         db: Session | AsyncSession,
         *,
         db_obj: User,
-        obj_in: Union[UserUpdate, Dict[str, Any]]
-    ) -> User | Awaitable[User]:
+        obj_in: UserUpdate | dict[str, Any]
+    ) -> User | None | Awaitable[User | None]:
         if isinstance(obj_in, dict):
             update_data = obj_in
         else:

@@ -71,11 +71,21 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             return self._all_async(scalars)
         return scalars.all()
 
-    def get(
-        self, db: Session | AsyncSession, id: Any
-    ) -> ModelType | Awaitable[ModelType] | None:
-        query = select(self.model).filter(self.model.id == id)
-        return self._first(db.scalars(query))
+    # def get(
+    #     self, db: Session | AsyncSession, id: Any
+    # ) -> ModelType | Awaitable[ModelType] | None:
+    #     query = select(self.model).filter(self.model.id == id)
+    #     return self._first(db.scalars(query))
+
+    async def get(
+        self, db: AsyncSession, id: int
+    ) -> ModelType | None:
+        print('------------id: ', id, type(id))
+        query = select(self.model).where(self.model.id == id)
+        # print('------------query: ', query)
+        # response = await db.execute(query)
+        # print('------------response: ', response)
+        # return response.scalar_one_or_none()
 
     def get_multi(
         self,
@@ -83,13 +93,13 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         *,
         skip: int = 0,
         limit: int | None = 100,
-        asc: bool = False
+        order_by: list = None,
     ) -> list[ModelType] | Awaitable[list[ModelType]]:
-        query = (
-            select(self.model)
-            .order_by(self.model.id.asc() if asc else self.model.id.desc())
-            .offset(skip)
-        )
+        if order_by is None:
+            order_by = []
+        order_by.append(self.model.id.asc())
+
+        query = select(self.model).order_by(*order_by).offset(skip)
         if limit is None:
             return self._all(db.scalars(query))
         return self._all(db.scalars(query.limit(limit)))
@@ -97,8 +107,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def create(
         self, db: Session | AsyncSession, *, obj_in: CreateSchemaType
     ) -> ModelType | Awaitable[ModelType]:
-        obj_in_data = jsonable_encoder(obj_in)
-        db_obj = self.model(**obj_in_data)  # type: ignore
+        if not isinstance(obj_in, dict):
+            obj_in = jsonable_encoder(obj_in)
+        db_obj = self.model(**obj_in)  # type: ignore
         db.add(db_obj)
         return self._commit_refresh(db=db, db_obj=db_obj)
 

@@ -3,8 +3,7 @@ from typing import Generic, TypeVar
 
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from pydantic import Field
-from pydantic.generics import GenericModel
+from pydantic import BaseModel, Field
 from starlette.responses import Response
 
 from app import utils
@@ -12,7 +11,7 @@ from app import utils
 T = TypeVar("T")
 
 
-class ApiResponseHeader(GenericModel, Generic[T], ABC):
+class ApiResponseHeader(BaseModel, Generic[T], ABC):
     """Header type of APIResponseType"""
 
     status: int = 0
@@ -21,7 +20,7 @@ class ApiResponseHeader(GenericModel, Generic[T], ABC):
     messageCode: int = Field(..., description=str(utils.MessageCodes.messages_names))
 
 
-class PaginatedContent(GenericModel, Generic[T]):
+class PaginatedContent(BaseModel, Generic[T]):
     """Content data type for lists with pagination"""
 
     data: T
@@ -30,24 +29,24 @@ class PaginatedContent(GenericModel, Generic[T]):
     offset: int = 0
 
 
-class APIResponseType(GenericModel, Generic[T]):
+class APIResponseType(BaseModel, Generic[T]):
     """
     an api response type for using as the api's router response_model
     use this for apis that use our APIResponse class for their output
     """
 
     header: ApiResponseHeader
-    content: T | None
+    content: T | None = None
 
 
-class APIResponse(GenericModel, Generic[T]):
+class APIResponse(BaseModel, Generic[T]):
     """
     Custom reponse class for apis
     Adds custom header, messages to reponses
     """
 
     header: ApiResponseHeader
-    content: T | None
+    content: T | None = None
 
     def __new__(cls, data: T, *args, msg_code: int = 0, msg_status: int = 0, **kwargs):
         if data:
