@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import crud, models, schemas, utils
 from app.core import security
@@ -31,7 +32,7 @@ async def get_db_async() -> AsyncGenerator:
 
 
 async def get_current_user(
-    db: Session = Depends(get_db_async), token: str = Depends(reusable_oauth2)
+    db: AsyncSession = Depends(get_db_async), token: str = Depends(reusable_oauth2)
 ) -> models.User:
     try:
         payload = jwt.decode(
@@ -43,7 +44,7 @@ async def get_current_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
         )
-    user = await crud.user.get(db, id=token_data.sub)
+    user = await crud.user.get(db, id=int(token_data.sub))
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
