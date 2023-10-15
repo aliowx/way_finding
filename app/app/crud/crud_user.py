@@ -11,16 +11,12 @@ from app.schemas.user import UserCreate, UserUpdate
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
-    async def get_by_email(
-        self, db: AsyncSession, email: str
-    ) -> User | None:
+    async def get_by_email(self, db: AsyncSession, email: str) -> User | None:
         query = select(self.model).where(self.model.email == email)
         response = await db.execute(query)
         return response.scalar_one_or_none()
 
-    async def create(
-        self, db: AsyncSession, obj_in: UserCreate | dict
-    ) -> User:
+    async def create(self, db: AsyncSession, obj_in: UserCreate | dict) -> User:
         if isinstance(obj_in, dict):
             password = obj_in["password"]
         else:
@@ -33,10 +29,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         return await super().create(db, obj_in=obj_in_data)
 
     async def update(
-        self,
-        db: AsyncSession,
-        db_obj: User,
-        obj_in: UserUpdate | dict
+        self, db: AsyncSession, db_obj: User, obj_in: UserUpdate | dict
     ) -> User | Awaitable[User]:
         if isinstance(obj_in, dict):
             update_data = obj_in

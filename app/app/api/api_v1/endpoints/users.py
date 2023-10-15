@@ -3,7 +3,6 @@ from datetime import timedelta
 from fastapi import APIRouter, Body, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 
@@ -74,9 +73,9 @@ async def test_token(
 @router.post("/reset-password/")
 @invalidate(namespace=namespace)
 async def reset_password(
-    token: str = Body(...),
-    new_password: str = Body(...),
-    db: Session = Depends(deps.get_db_async),
+    token: str = Body(embed=True),
+    new_password: str = Body(embed=True),
+    db: AsyncSession = Depends(deps.get_db_async),
 ) -> schemas.Msg:
     """
     Reset password
@@ -92,24 +91,24 @@ async def reset_password(
     if not user:
         raise exc.InternalServiceError(
             status_code=400,
-            detail="The user with this username does not exist in the system.",
+            detail="The user with this username does not exist in the system",
             msg_code=utils.MessageCodes.bad_request,
         )
     elif not crud.user.is_active(user):
         raise exc.InternalServiceError(
             status_code=400,
-            detail="Inactive user.",
+            detail="Inactive user",
             msg_code=utils.MessageCodes.bad_request,
         )
     hashed_password = get_password_hash(new_password)
-    user.hashed_password = hashed_password
-    db.add(user)
-    await db.commit()
-    return {"msg": "Password updated successfully"}
+    obj_in = {"hashed_password": hashed_password}
+    await crud.user.update(db, db_obj=user, obj_in=obj_in)
+
+    return APIResponse(schemas.Msg(msg="Password updated successfully"))
 
 
 @router.get("/")
-# @cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
+@cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
 async def read_users(
     db: AsyncSession = Depends(deps.get_db_async),
     skip: int = 0,
@@ -119,18 +118,15 @@ async def read_users(
     """
     Retrieve users.
     """
-    print('--------------------')
     users = await crud.user.get_multi(db, skip=skip, limit=limit)
-    print('---------------users: ', users)
     return APIResponse(users)
 
 
 @router.post("/")
 @invalidate(namespace=namespace)
 async def create_user(
-    *,
-    db: AsyncSession = Depends(deps.get_db_async),
     user_in: schemas.UserCreate,
+    db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> APIResponseType[schemas.User]:
     """
@@ -150,7 +146,6 @@ async def create_user(
 @router.put("/me")
 @invalidate(namespace=namespace)
 async def update_user_me(
-    *,
     db: AsyncSession = Depends(deps.get_db_async),
     password: str = Body(None),
     full_name: str = Body(None),
@@ -173,7 +168,7 @@ async def update_user_me(
 
 
 @router.get("/{user_id}")
-# @cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
+@cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
 async def read_user_by_id(
     user_id: int,
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -182,32 +177,29 @@ async def read_user_by_id(
     """
     Get a specific user by id.
     """
-    print('-----------------------------------------------')
-    print('-------------user_id: ', user_id, type(user_id))
-    # user = await crud.user.get(db, id=user_id)
-    # if not user:
-    #     raise exc.InternalServiceError(
-    #         status_code=404,
-    #         detail="User not found",
-    #         msg_code=utils.MessageCodes.not_found,
-    #     )
-    # if user == current_user:
-    #     return APIResponse(user)
-    # if not crud.user.is_superuser(current_user):
-    #     raise exc.InternalServiceError(
-    #         status_code=400,
-    #         detail="The user doesn't have enough privileges",
-    #         msg_code=utils.MessageCodes.bad_request,
-    #     )
-    # return APIResponse(user)
+    user = await crud.user.get(db, id=user_id)
+    if not user:
+        raise exc.InternalServiceError(
+            status_code=404,
+            detail="User not found",
+            msg_code=utils.MessageCodes.not_found,
+        )
+    if user == current_user:
+        return APIResponse(user)
+    if not crud.user.is_superuser(current_user):
+        raise exc.InternalServiceError(
+            status_code=400,
+            detail="The user doesn't have enough privileges",
+            msg_code=utils.MessageCodes.bad_request,
+        )
+    return APIResponse(user)
 
 
 @router.put("/{user_id}")
 async def update_user(
-    *,
-    db: AsyncSession = Depends(deps.get_db_async),
     user_id: int,
     user_in: schemas.UserUpdate,
+    db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> APIResponseType[schemas.User]:
     """

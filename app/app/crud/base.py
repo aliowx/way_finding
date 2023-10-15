@@ -31,9 +31,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         self.model = model
 
-    async def get(
-        self, db: AsyncSession, id: int | str
-    ) -> ModelType | None:
+    async def get(self, db: AsyncSession, id: int | str) -> ModelType | None:
         query = select(self.model).where(self.model.id == id)
         response = await db.execute(query)
         return response.scalar_one_or_none()
@@ -45,9 +43,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         response = await db.execute(query)
         return response.scalars().all()
 
-    async def get_count(
-        self, db: AsyncSession
-    ) -> ModelType | None:
+    async def get_count(self, db: AsyncSession) -> ModelType | None:
         query = select(func.count()).select_from(select(self.model).subquery())
         response = await db.execute(query)
         return response.scalar_one()
@@ -99,7 +95,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self,
         db: AsyncSession,
         db_obj: ModelType,
-        obj_in: UpdateSchemaType | dict[str, Any] | None = None
+        obj_in: UpdateSchemaType | dict[str, Any] | None = None,
     ) -> ModelType:
         if obj_in is not None:
             obj_data = jsonable_encoder(db_obj)
@@ -117,9 +113,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         await db.refresh(db_obj)
         return db_obj
 
-    async def remove(
-        self, db: AsyncSession, *, id: int | str
-    ) -> ModelType:
+    async def remove(self, db: AsyncSession, *, id: int | str) -> ModelType:
         query = select(self.model).where(self.model.id == id)
         response = await db.execute(query)
         obj = response.scalar_one()

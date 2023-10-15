@@ -16,6 +16,7 @@ from types import GeneratorType
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 from pydantic import BaseModel
+
 # from pydantic.json import ENCODERS_BY_TYPE
 
 DATETIME_AWARE = "%m/%d/%Y %I:%M:%S %p %z"
