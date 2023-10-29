@@ -12,11 +12,13 @@ from pathlib import PurePath
 from types import GeneratorType
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
-from fastapi._compat import PYDANTIC_V2
+from pydantic.version import VERSION as PYDANTIC_VERSION
 from pydantic import BaseModel
 
 from pydantic.v1.json import ENCODERS_BY_TYPE
 
+
+PYDANTIC_V2 = PYDANTIC_VERSION.startswith("2.")
 DATETIME_AWARE = "%m/%d/%Y %I:%M:%S %p %z"
 DATE_ONLY = "%m/%d/%Y"
 
