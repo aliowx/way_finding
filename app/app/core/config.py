@@ -1,8 +1,7 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, List, Optional, Union
 
 from pydantic import field_validator, AnyHttpUrl, EmailStr, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic_core.core_schema import FieldValidationInfo
 
 
 class AsyncPostgresDsn(PostgresDsn):
@@ -13,13 +12,15 @@ class Settings(BaseSettings):
     POSTGRES_SERVER: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
-    POSTGRES_PORT: int
     POSTGRES_DB: str
+    POSTGRES_TEST_DB: str
+    POSTGRES_PORT: int
 
     PROJECT_NAME: str
     API_V1_STR: str = "/api/v1"
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str
+    EMAIL_TEST_USER: EmailStr
     DEBUG: bool = False
 
     USERS_OPEN_REGISTRATION: bool = True
@@ -40,7 +41,6 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
-    @classmethod
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
@@ -48,30 +48,11 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
-    SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
-
-    @field_validator("SQLALCHEMY_DATABASE_URI", mode="before")
-    @classmethod
-    def assemble_db_connection(
-        cls, v: Optional[str], values: FieldValidationInfo
-    ) -> Any:
-        if isinstance(v, str):
-            return v
-        return PostgresDsn.build(
-            scheme="postgresql",
-            username=values.data.get("POSTGRES_USER"),
-            password=values.data.get("POSTGRES_PASSWORD"),
-            host=values.data.get("POSTGRES_SERVER"),
-            port=values.data.get("POSTGRES_PORT"),
-            path=f"{values.data.get('POSTGRES_DB') or ''}",
-        )
-
     SQLALCHEMY_DATABASE_ASYNC_URI: Optional[AsyncPostgresDsn] = None
 
     @field_validator("SQLALCHEMY_DATABASE_ASYNC_URI", mode="before")
-    @classmethod
     def assemble_async_db_connection(
-        cls, v: Optional[str], values: FieldValidationInfo
+        cls, v: Optional[str], values: Any
     ) -> Any:
         if isinstance(v, str):
             return v

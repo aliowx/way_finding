@@ -1,29 +1,20 @@
-from typing import Generator, AsyncGenerator
+from typing import AsyncGenerator
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from pydantic import ValidationError
-from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import crud, models, schemas, utils
 from app.core import security
 from app.core.config import settings
-from app.db.session import SessionLocal, async_session
+from app.db.session import async_session
 from app import exceptions as exc
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/users/login/access-token"
 )
-
-
-def get_db() -> Generator:
-    try:
-        db = SessionLocal()
-        yield db
-    finally:
-        db.close()
 
 
 async def get_db_async() -> AsyncGenerator:
