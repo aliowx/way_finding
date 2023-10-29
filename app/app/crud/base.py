@@ -1,12 +1,10 @@
-from asyncio import iscoroutine
 from datetime import datetime
-from typing import Awaitable, Any, Generic, Type, TypeVar
+from typing import Awaitable, Any, Generic, Type, TypeVar, Sequence
 
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
-from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy import func, Row, RowMapping
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import exc
@@ -31,26 +29,26 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         self.model = model
 
-    async def get(self, db: AsyncSession, id: int | str) -> ModelType | None:
+    async def get(self, db: AsyncSession, id: int | str) -> Awaitable[ModelType | None]:
         query = select(self.model).where(self.model.id == id)
         response = await db.execute(query)
         return response.scalar_one_or_none()
 
     async def get_by_ids(
         self, db: AsyncSession, list_ids: list[int | str]
-    ) -> list[ModelType] | None:
+    ) -> Sequence[Row | RowMapping | Any]:
         query = select(self.model).where(self.model.id.in_(list_ids))
         response = await db.execute(query)
         return response.scalars().all()
 
-    async def get_count(self, db: AsyncSession) -> ModelType | None:
+    async def get_count(self, db: AsyncSession) -> Awaitable[ModelType | None]:
         query = select(func.count()).select_from(select(self.model).subquery())
         response = await db.execute(query)
         return response.scalar_one()
 
     async def get_multi(
         self, db: AsyncSession, skip: int = 0, limit: int = 100
-    ) -> list[ModelType]:
+    ) -> Sequence[Row | RowMapping | Any]:
         query = select(self.model).offset(skip).limit(limit).order_by(self.model.id)
         response = await db.execute(query)
         return response.scalars().all()
@@ -61,7 +59,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         skip: int = 0,
         limit: int | None = 100,
         order_by: list = None,
-    ) -> list[ModelType]:
+    ) -> Sequence[Row | RowMapping | Any]:
         if order_by is None:
             order_by = []
         order_by.append(self.model.id.asc())
@@ -75,7 +73,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     async def create(
         self, db: AsyncSession, obj_in: CreateSchemaType | dict
-    ) -> ModelType:
+    ) -> Awaitable[ModelType]:
         if not isinstance(obj_in, dict):
             obj_in = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in)  # type: ignore
@@ -92,11 +90,11 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return db_obj
 
     async def update(
-        self,
-        db: AsyncSession,
-        db_obj: ModelType,
-        obj_in: UpdateSchemaType | dict[str, Any] | None = None,
-    ) -> ModelType:
+            self,
+            db: AsyncSession,
+            db_obj: ModelType,
+            obj_in: UpdateSchemaType | dict[str, Any] | ModelType
+    ) -> Awaitable[ModelType]:
         if obj_in is not None:
             obj_data = jsonable_encoder(db_obj)
             if isinstance(obj_in, dict):
@@ -113,7 +111,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         await db.refresh(db_obj)
         return db_obj
 
-    async def remove(self, db: AsyncSession, *, id: int | str) -> ModelType:
+    async def remove(self, db: AsyncSession, *, id: int | str) -> Awaitable[ModelType]:
         query = select(self.model).where(self.model.id == id)
         response = await db.execute(query)
         obj = response.scalar_one()
