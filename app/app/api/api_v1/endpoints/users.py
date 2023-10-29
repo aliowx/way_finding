@@ -60,8 +60,8 @@ async def login_access_token(
     )
 
 
-@router.post("/login/test-token")
-async def test_token(
+@router.get("/me")
+async def me(
     current_user: models.User = Depends(deps.get_current_user),
 ) -> APIResponseType[schemas.User]:
     """
@@ -70,7 +70,7 @@ async def test_token(
     return APIResponse(current_user)
 
 
-@router.post("/reset-password/")
+@router.post("/reset-password")
 @invalidate(namespace=namespace)
 async def reset_password(
     token: str = Body(embed=True),
@@ -101,8 +101,8 @@ async def reset_password(
             msg_code=utils.MessageCodes.bad_request,
         )
     hashed_password = get_password_hash(new_password)
-    obj_in = {"hashed_password": hashed_password}
-    await crud.user.update(db, db_obj=user, obj_in=obj_in)
+    user.hashed_password = hashed_password
+    await crud.user.update(db, db_obj=user)
 
     return APIResponse(schemas.Msg(msg="Password updated successfully"))
 
