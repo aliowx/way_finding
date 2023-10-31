@@ -23,9 +23,7 @@ class ApiResponseHeader(BaseModel, Generic[T], ABC):
     status: int = 0
     message: str = "Successful Operation"
     persianMessage: str = "عملیات موفق"
-    messageCode: int = Field(
-        ..., description=str(utils.MessageCodes.messages_names)
-    )
+    messageCode: int = Field(..., description=str(utils.MessageCodes.messages_names))
 
 
 class PaginatedContent(BaseModel, Generic[T]):
@@ -104,9 +102,7 @@ class APIErrorResponse(JSONResponse):
         header_data = {
             "status": msg_status,
             "message": utils.MessageCodes.messages_names[msg_code],
-            "persianMessage": utils.MessageCodes.persian_message_names[
-                msg_code
-            ],
+            "persianMessage": utils.MessageCodes.persian_message_names[msg_code],
             "messageCode": msg_code,
         }
         if header:

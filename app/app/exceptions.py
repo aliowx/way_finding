@@ -52,9 +52,7 @@ async def internal_service_exceptions_handler(request: Request, exc: Any):
 
 async def internal_exceptions_handler(request: Request, exc: Any):
     exception_type, traceback_str, traceback_full = get_traceback_info(exc)
-    logger.error(
-        f"Unhandled {exception_type} Exception Happened:\n{traceback_str}"
-    )
+    logger.error(f"Unhandled {exception_type} Exception Happened:\n{traceback_str}")
 
     error_msg = ""
     if settings.DEBUG:
@@ -94,9 +92,7 @@ async def validation_exceptions_handler(request: Request, exc: Any):
 
 async def response_validation_exceptions_handler(request: Request, exc: Any):
     exception_type, traceback_str, traceback_full = get_traceback_info(exc)
-    logger.error(
-        "Internal service response validation error:\n{}".format(exc.errors())
-    )
+    logger.error("Internal service response validation error:\n{}".format(exc.errors()))
 
     response = utils.APIErrorResponse(
         data="",
