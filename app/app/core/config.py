@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     REDIS_PASSWORD: str
     REDIS_TIMEOUT: Optional[int] = 5
 
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] | str = []
 
     @classmethod
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
