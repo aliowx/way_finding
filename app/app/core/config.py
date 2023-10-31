@@ -40,20 +40,24 @@ class Settings(BaseSettings):
 
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
 
+    @classmethod
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
-        if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
+        if isinstance(v, str):
+            return [i.strip() for i in v.strip("[]").split(",")]
         elif isinstance(v, (list, str)):
             return v
         raise ValueError(v)
 
+    @property
+    def allow_origins(self) -> list[str]:
+        return [str(origin).strip("/") for origin in self.BACKEND_CORS_ORIGINS]
+
     SQLALCHEMY_DATABASE_ASYNC_URI: Optional[AsyncPostgresDsn] = None
 
+    @classmethod
     @field_validator("SQLALCHEMY_DATABASE_ASYNC_URI", mode="before")
-    def assemble_async_db_connection(
-        cls, v: Optional[str], values: Any
-    ) -> Any:
+    def assemble_async_db_connection(cls, v: Optional[str], values: Any) -> Any:
         if isinstance(v, str):
             return v
         return AsyncPostgresDsn.build(
