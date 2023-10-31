@@ -4,8 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import crud, schemas
 from app.core.config import settings
-from app.db import base  # noqa: F401
-from app.db.session import async_session
+
 
 logger = logging.getLogger(__name__)
 
@@ -23,10 +22,3 @@ async def create_super_admin(db: AsyncSession) -> None:
 
 async def init_db(db: AsyncSession) -> None:
     await create_super_admin(db)
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    db = async_session()
-    asyncio.run(init_db(db))

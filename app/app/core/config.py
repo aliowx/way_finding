@@ -55,7 +55,6 @@ class Settings(BaseSettings):
 
     SQLALCHEMY_DATABASE_ASYNC_URI: Optional[AsyncPostgresDsn] = None
 
-    @classmethod
     @field_validator("SQLALCHEMY_DATABASE_ASYNC_URI", mode="before")
     def assemble_async_db_connection(cls, v: Optional[str], values: Any) -> Any:
         if isinstance(v, str):
