@@ -27,5 +27,6 @@ async def init_db(db: AsyncSession) -> None:
 
 if __name__ == "__main__":
     import asyncio
+
     db = async_session()
     asyncio.run(init_db(db))

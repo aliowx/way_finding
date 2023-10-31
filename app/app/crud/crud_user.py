@@ -17,7 +17,9 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         response = await db.execute(query)
         return response.scalar_one_or_none()
 
-    async def create(self, db: AsyncSession, obj_in: UserCreate | dict) -> Awaitable[Base | Any]:
+    async def create(
+        self, db: AsyncSession, obj_in: UserCreate | dict
+    ) -> Awaitable[Base | Any]:
         if isinstance(obj_in, dict):
             password = obj_in["password"]
         else:
@@ -30,10 +32,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         return await super().create(db, obj_in=obj_in_data)
 
     async def update(
-            self,
-            db: AsyncSession,
-            db_obj: User,
-            obj_in: Union[UserUpdate, Dict[str, Any]]
+        self, db: AsyncSession, db_obj: User, obj_in: Union[UserUpdate, Dict[str, Any]]
     ) -> Awaitable[Base | Any]:
         if isinstance(obj_in, dict):
             update_data = obj_in
@@ -46,7 +45,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         return await super().update(db=db, db_obj=db_obj, obj_in=update_data)
 
     async def authenticate(
-            self, db: AsyncSession, email: str, password: str
+        self, db: AsyncSession, email: str, password: str
     ) -> User | None:
         user_obj = await self.get_by_email(db, email=email)
         if not user:

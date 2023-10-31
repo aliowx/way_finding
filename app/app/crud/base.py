@@ -90,10 +90,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return db_obj
 
     async def update(
-            self,
-            db: AsyncSession,
-            db_obj: ModelType,
-            obj_in: UpdateSchemaType | dict[str, Any] | ModelType
+        self,
+        db: AsyncSession,
+        db_obj: ModelType,
+        obj_in: UpdateSchemaType | dict[str, Any] | ModelType,
     ) -> Awaitable[ModelType]:
         if obj_in is not None:
             obj_data = jsonable_encoder(db_obj)

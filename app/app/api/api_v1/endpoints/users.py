@@ -19,7 +19,6 @@ from app.utils.user import (
 from cache import cache, invalidate
 from cache.util import ONE_DAY_IN_SECONDS
 
-
 router = APIRouter()
 namespace = "user"
 
