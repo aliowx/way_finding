@@ -19,7 +19,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
     async def create(
         self, db: AsyncSession, obj_in: UserCreate | dict
-    ) -> Awaitable[Base | Any]:
+    ) -> Base | Any:
         if isinstance(obj_in, dict):
             password = obj_in["password"]
         else:
@@ -33,7 +33,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
     async def update(
         self, db: AsyncSession, db_obj: User, obj_in: Union[UserUpdate, Dict[str, Any]]
-    ) -> Awaitable[Base | Any]:
+    ) -> Base | Any:
         if isinstance(obj_in, dict):
             update_data = obj_in
         else:

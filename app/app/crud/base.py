@@ -29,7 +29,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         self.model = model
 
-    async def get(self, db: AsyncSession, id: int | str) -> Awaitable[ModelType | None]:
+    async def get(self, db: AsyncSession, id: int | str) -> ModelType | None:
         query = select(self.model).where(self.model.id == id)
         response = await db.execute(query)
         return response.scalar_one_or_none()
@@ -41,7 +41,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         response = await db.execute(query)
         return response.scalars().all()
 
-    async def get_count(self, db: AsyncSession) -> Awaitable[ModelType | None]:
+    async def get_count(self, db: AsyncSession) -> ModelType | None:
         query = select(func.count()).select_from(select(self.model).subquery())
         response = await db.execute(query)
         return response.scalar_one()
@@ -49,7 +49,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     async def get_multi(
         self, db: AsyncSession, skip: int = 0, limit: int = 100
     ) -> Sequence[Row | RowMapping | Any]:
-        query = select(self.model).offset(skip).limit(limit).order_by(self.model.id)
+        query = select(self.model).offset(skip).limit(limit).order_by(self.model.created)
         response = await db.execute(query)
         return response.scalars().all()
 
@@ -73,7 +73,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     async def create(
         self, db: AsyncSession, obj_in: CreateSchemaType | dict
-    ) -> Awaitable[ModelType]:
+    ) -> ModelType:
         if not isinstance(obj_in, dict):
             obj_in = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in)  # type: ignore
@@ -94,7 +94,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db: AsyncSession,
         db_obj: ModelType,
         obj_in: UpdateSchemaType | dict[str, Any] | ModelType,
-    ) -> Awaitable[ModelType]:
+    ) -> ModelType:
         if obj_in is not None:
             obj_data = jsonable_encoder(db_obj)
             if isinstance(obj_in, dict):
@@ -111,7 +111,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         await db.refresh(db_obj)
         return db_obj
 
-    async def remove(self, db: AsyncSession, *, id: int | str) -> Awaitable[ModelType]:
+    async def remove(self, db: AsyncSession, *, id: int | str) -> ModelType:
         query = select(self.model).where(self.model.id == id)
         response = await db.execute(query)
         obj = response.scalar_one()
