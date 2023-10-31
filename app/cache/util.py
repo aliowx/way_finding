@@ -2,24 +2,15 @@ from base64 import b64decode, b64encode
 import json
 from datetime import date, datetime
 from decimal import Decimal
-
 from dateutil import parser
-
-import dataclasses
 from collections import defaultdict
-from enum import Enum
-from pathlib import PurePath
-from types import GeneratorType
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, Set, Tuple, Union
 
 from fastapi.encoders import jsonable_encoder
-from pydantic.version import VERSION as PYDANTIC_VERSION
-from pydantic import BaseModel
 
 from pydantic.v1.json import ENCODERS_BY_TYPE
 
 
-PYDANTIC_V2 = PYDANTIC_VERSION.startswith("2.")
 DATETIME_AWARE = "%m/%d/%Y %I:%M:%S %p %z"
 DATE_ONLY = "%m/%d/%Y"
 

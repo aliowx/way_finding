@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Awaitable, Any, Generic, Type, TypeVar, Sequence
+from typing import Awaitable, Any, Generic, Type, TypeVar, Sequence, Union
 
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
@@ -47,9 +47,27 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return response.scalar_one()
 
     async def get_multi(
-        self, db: AsyncSession, skip: int = 0, limit: int = 100
-    ) -> Sequence[Row | RowMapping | Any]:
-        query = select(self.model).offset(skip).limit(limit).order_by(self.model.created)
+        self,
+        db: AsyncSession,
+        skip: int = 0,
+        limit: int | None = 100,
+        order_by: list = None,
+        order_field: str = "created",
+        order_desc: bool = False,
+    ) -> Sequence[Union[Row, RowMapping, Any]]:
+        if order_by is None:
+            order_by = []
+
+        if order_desc:
+            order_by.append(getattr(self.model, order_field).desc())
+        else:
+            order_by.append(getattr(self.model, order_field).asc())
+
+        query = select(self.model).order_by(*order_by).offset(skip)
+
+        if limit is not None:
+            query = query.limit(limit)
+
         response = await db.execute(query)
         return response.scalars().all()
 

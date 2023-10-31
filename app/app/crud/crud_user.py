@@ -17,9 +17,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         response = await db.execute(query)
         return response.scalar_one_or_none()
 
-    async def create(
-        self, db: AsyncSession, obj_in: UserCreate | dict
-    ) -> Base | Any:
+    async def create(self, db: AsyncSession, obj_in: UserCreate | dict) -> Base | Any:
         if isinstance(obj_in, dict):
             password = obj_in["password"]
         else:

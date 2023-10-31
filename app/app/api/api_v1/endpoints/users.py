@@ -75,7 +75,7 @@ async def reset_password(
     token: str = Body(embed=True),
     new_password: str = Body(embed=True),
     db: AsyncSession = Depends(deps.get_db_async),
-) -> schemas.Msg:
+) -> APIResponse:
     """
     Reset password
     """
