@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Awaitable, Any, Generic, Type, TypeVar, Sequence, Union
+from typing import Any, Generic, Type, TypeVar, Sequence, Union
 
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
