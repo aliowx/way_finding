@@ -11,6 +11,7 @@ class MessageCodes:
     operation_failed = 5
     incorrect_email_or_password = 6
     inactive_user = 7
+    permisionError = 8
     # services code start from 1001
 
     messages_names = {
@@ -22,7 +23,7 @@ class MessageCodes:
         5: "Operation Failed",
         6: "Invalid Email Or Password",
         7: "Inactive User",
-
+        8: "Dont Have Access",
     }
 
     persian_message_names = {
@@ -34,4 +35,5 @@ class MessageCodes:
         5: "عملیات ناموفق",
         6: "ایمیل یا پسورد نامعتبر",
         7: "یوزر غیرفعال",
+        8: "سظح دسترسی غیرمجاز",
     }

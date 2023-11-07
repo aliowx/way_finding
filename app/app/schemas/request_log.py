@@ -1,16 +1,13 @@
-from typing import Optional
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import ConfigDict, BaseModel
 
 
 class RequestLogInDBBase(BaseModel):
     id: int
     created: datetime
     modified: datetime
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RequestLogCreate(BaseModel):
@@ -18,9 +15,9 @@ class RequestLogCreate(BaseModel):
     response: str = None
     service_name: str = None
     method: str = None
-    authorization: Optional[str] = None
-    ip: Optional[str] = None
-    trace: Optional[str] = None
+    authorization: str | None = None
+    ip: str | None = None
+    trace: str | None = None
 
 
 class RequestLogUpdate(BaseModel):

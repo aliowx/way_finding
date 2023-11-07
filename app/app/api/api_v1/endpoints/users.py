@@ -3,7 +3,6 @@ from datetime import timedelta
 from fastapi import APIRouter, Body, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 
@@ -19,7 +18,6 @@ from app.utils.user import (
 )
 from cache import cache, invalidate
 from cache.util import ONE_DAY_IN_SECONDS
-
 
 router = APIRouter()
 namespace = "user"
@@ -49,9 +47,7 @@ async def login_access_token(
             detail="Inactive user",
             msg_code=utils.MessageCodes.inactive_user,
         )
-    access_token_expires = timedelta(
-        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-    )
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
     return schemas.Token(
         access_token=security.create_access_token(
@@ -63,8 +59,8 @@ async def login_access_token(
     )
 
 
-@router.post("/login/test-token")
-async def test_token(
+@router.get("/me")
+async def me(
     current_user: models.User = Depends(deps.get_current_user),
 ) -> APIResponseType[schemas.User]:
     """
@@ -73,13 +69,13 @@ async def test_token(
     return APIResponse(current_user)
 
 
-@router.post("/reset-password/")
+@router.post("/reset-password")
 @invalidate(namespace=namespace)
 async def reset_password(
-    token: str = Body(...),
-    new_password: str = Body(...),
-    db: Session = Depends(deps.get_db_async),
-) -> schemas.Msg:
+    token: str = Body(embed=True),
+    new_password: str = Body(embed=True),
+    db: AsyncSession = Depends(deps.get_db_async),
+) -> APIResponse:
     """
     Reset password
     """
@@ -88,26 +84,26 @@ async def reset_password(
         raise exc.InternalServiceError(
             status_code=400,
             detail="Invalid token.",
-            msg_code=utils.MessageCodes.bad_request
+            msg_code=utils.MessageCodes.bad_request,
         )
     user = await crud.user.get(db, id=int(id_))
     if not user:
         raise exc.InternalServiceError(
             status_code=400,
-            detail="The user with this username does not exist in the system.",
-            msg_code=utils.MessageCodes.bad_request
+            detail="The user with this username does not exist in the system",
+            msg_code=utils.MessageCodes.bad_request,
         )
     elif not crud.user.is_active(user):
         raise exc.InternalServiceError(
             status_code=400,
-            detail="Inactive user.",
-            msg_code=utils.MessageCodes.bad_request
+            detail="Inactive user",
+            msg_code=utils.MessageCodes.bad_request,
         )
     hashed_password = get_password_hash(new_password)
     user.hashed_password = hashed_password
-    db.add(user)
-    await db.commit()
-    return {"msg": "Password updated successfully"}
+    await crud.user.update(db, db_obj=user)
+
+    return APIResponse(schemas.Msg(msg="Password updated successfully"))
 
 
 @router.get("/")
@@ -128,9 +124,8 @@ async def read_users(
 @router.post("/")
 @invalidate(namespace=namespace)
 async def create_user(
-    *,
-    db: AsyncSession = Depends(deps.get_db_async),
     user_in: schemas.UserCreate,
+    db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> APIResponseType[schemas.User]:
     """
@@ -150,7 +145,6 @@ async def create_user(
 @router.put("/me")
 @invalidate(namespace=namespace)
 async def update_user_me(
-    *,
     db: AsyncSession = Depends(deps.get_db_async),
     password: str = Body(None),
     full_name: str = Body(None),
@@ -202,10 +196,9 @@ async def read_user_by_id(
 
 @router.put("/{user_id}")
 async def update_user(
-    *,
-    db: AsyncSession = Depends(deps.get_db_async),
     user_id: int,
     user_in: schemas.UserUpdate,
+    db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> APIResponseType[schemas.User]:
     """

@@ -1,12 +1,13 @@
-from asyncio import iscoroutine
 from datetime import datetime
-from typing import Awaitable, Any, Generic, Type, TypeVar
+from typing import Any, Generic, Type, TypeVar, Sequence, Union
 
+from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
+from sqlalchemy import func, Row, RowMapping
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import exc
 
 from app.db.base_class import Base
 
@@ -28,120 +29,110 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         self.model = model
 
-    async def _commit_refresh_async(
-        self, db: AsyncSession, db_obj: ModelType
+    async def get(self, db: AsyncSession, id: int | str) -> ModelType | None:
+        query = select(self.model).where(self.model.id == id)
+        response = await db.execute(query)
+        return response.scalar_one_or_none()
+
+    async def get_by_ids(
+        self, db: AsyncSession, list_ids: list[int | str]
+    ) -> Sequence[Row | RowMapping | Any]:
+        query = select(self.model).where(self.model.id.in_(list_ids))
+        response = await db.execute(query)
+        return response.scalars().all()
+
+    async def get_count(self, db: AsyncSession) -> ModelType | None:
+        query = select(func.count()).select_from(select(self.model).subquery())
+        response = await db.execute(query)
+        return response.scalar_one()
+
+    async def get_multi(
+        self,
+        db: AsyncSession,
+        skip: int = 0,
+        limit: int | None = 100,
+        order_by: list = None,
+        order_field: str = "created",
+        order_desc: bool = False,
+    ) -> Sequence[Union[Row, RowMapping, Any]]:
+        if order_by is None:
+            order_by = []
+
+        if order_desc:
+            order_by.append(getattr(self.model, order_field).desc())
+        else:
+            order_by.append(getattr(self.model, order_field).asc())
+
+        query = select(self.model).order_by(*order_by).offset(skip)
+
+        if limit is not None:
+            query = query.limit(limit)
+
+        response = await db.execute(query)
+        return response.scalars().all()
+
+    async def get_multi_ordered(
+        self,
+        db: AsyncSession,
+        skip: int = 0,
+        limit: int | None = 100,
+        order_by: list = None,
+    ) -> Sequence[Row | RowMapping | Any]:
+        if order_by is None:
+            order_by = []
+        order_by.append(self.model.id.asc())
+
+        query = select(self.model).order_by(*order_by).offset(skip)
+        if limit is None:
+            response = await db.execute(query)
+            return response.scalars().all()
+        response = await db.execute(query.limit(limit))
+        return response.scalars().all()
+
+    async def create(
+        self, db: AsyncSession, obj_in: CreateSchemaType | dict
     ) -> ModelType:
-        await db.commit()
+        if not isinstance(obj_in, dict):
+            obj_in = jsonable_encoder(obj_in)
+        db_obj = self.model(**obj_in)  # type: ignore
+        try:
+            db.add(db_obj)
+            await db.commit()
+        except exc.IntegrityError:
+            await db.rollback()
+            raise HTTPException(
+                status_code=409,
+                detail="Resource already exists",
+            )
         await db.refresh(db_obj)
         return db_obj
 
-    def _commit_refresh(
-        self, db: Session | AsyncSession, db_obj: ModelType
-    ) -> ModelType | Awaitable[ModelType]:
-        if isinstance(db, AsyncSession):
-            return self._commit_refresh_async(db, db_obj=db_obj)
-        db.commit()
-        db.refresh(db_obj)
-        return db_obj
-
-    async def _first_async(self, scalars) -> ModelType | None:
-        results = await scalars
-        return results.first()
-
-    def _first(self, scalars) -> ModelType | None | Awaitable[ModelType | None]:
-        if iscoroutine(scalars):
-            return self._first_async(scalars)
-        return scalars.first()
-
-    async def _last_async(self, scalars) -> ModelType | None:
-        results = await scalars
-        return results.last()
-
-    def _last(self, scalars) -> ModelType | None | Awaitable[ModelType | None]:
-        if iscoroutine(scalars):
-            return self._last_async(scalars)
-        return scalars.last()
-
-    async def _all_async(self, scalars) -> list[ModelType]:
-        results = await scalars
-        return results.all()
-
-    def _all(self, scalars) -> list[ModelType] | Awaitable[list[ModelType]]:
-        if iscoroutine(scalars):
-            return self._all_async(scalars)
-        return scalars.all()
-
-    def get(
-        self, db: Session | AsyncSession, id: Any
-    ) -> ModelType | Awaitable[ModelType] | None:
-        query = select(self.model).filter(self.model.id == id)
-        return self._first(db.scalars(query))
-
-    def get_multi(
+    async def update(
         self,
-        db: Session | AsyncSession,
-        *,
-        skip: int = 0,
-        limit: int | None = 100,
-        asc: bool = False
-    ) -> list[ModelType] | Awaitable[list[ModelType]]:
-        query = (
-            select(self.model)
-            .order_by(self.model.id.asc() if asc else self.model.id.desc())
-            .offset(skip)
-        )
-        if limit is None:
-            return self._all(db.scalars(query))
-        return self._all(db.scalars(query.limit(limit)))
-
-    def create(
-        self, db: Session | AsyncSession, *, obj_in: CreateSchemaType
-    ) -> ModelType | Awaitable[ModelType]:
-        obj_in_data = jsonable_encoder(obj_in)
-        db_obj = self.model(**obj_in_data)  # type: ignore
-        db.add(db_obj)
-        return self._commit_refresh(db=db, db_obj=db_obj)
-
-    def update(
-        self,
-        db: Session | AsyncSession,
-        *,
+        db: AsyncSession,
         db_obj: ModelType,
-        obj_in: UpdateSchemaType | dict[str, Any] | None = None
-    ) -> ModelType | Awaitable[ModelType]:
+        obj_in: UpdateSchemaType | dict[str, Any] | ModelType,
+    ) -> ModelType:
         if obj_in is not None:
             obj_data = jsonable_encoder(db_obj)
             if isinstance(obj_in, dict):
                 update_data = obj_in
             else:
-                update_data = obj_in.dict(exclude_unset=True)
+                update_data = obj_in.model_dump(exclude_unset=True)
             for field in obj_data:
                 if field in update_data:
                     setattr(db_obj, field, update_data[field])
         if hasattr(self.model, "modified"):
             setattr(db_obj, "modified", datetime.now())
         db.add(db_obj)
-        return self._commit_refresh(db=db, db_obj=db_obj)
+        await db.commit()
+        await db.refresh(db_obj)
+        return db_obj
 
-    async def _remove_async(self, db: AsyncSession, *, id: int) -> ModelType:
-        db_obj = await self.get(db=db, id=id)
-        db_obj.is_deleted = True
-
-        if hasattr(self.model, "modified"):
-            setattr(db_obj, "modified", datetime.now())
-
-        return await self._commit_refresh_async(db, db_obj=db_obj)
-
-    def remove(
-        self, db: Session | AsyncSession, *, id: int
-    ) -> ModelType | Awaitable[ModelType]:
-        if isinstance(db, AsyncSession):
-            return self._remove_async(db=db, id=id)
-
-        db_obj = db.query(self.model).get(id)
-        db_obj.is_deleted = True
-
-        if hasattr(self.model, "modified"):
-            setattr(db_obj, "modified", datetime.now())
-
-        return self._commit_refresh(db, db_obj=db_obj)
+    async def remove(self, db: AsyncSession, *, id: int | str) -> ModelType:
+        query = select(self.model).where(self.model.id == id)
+        response = await db.execute(query)
+        obj = response.scalar_one()
+        await db.delete(obj)
+        await db.commit()
+        return obj
