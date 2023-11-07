@@ -12,7 +12,7 @@ gunicorn = "^21.2.0"
 pydantic = {extras = ["dotenv", "email"], version = "^2.4.2"}
 psycopg2-binary = "^2.9.5"
 alembic = "^1.9.1"
-SQLAlchemy = "^2.0.22"
+SQLAlchemy = {extras = ["mypy"], version = "^2.0.22"}
 celery = "^5.2.7"
 fastapi = "^0.104.1"
 python-jose = "^3.3.0"
@@ -42,6 +42,7 @@ pytest="*"
 black="*"
 ruff="*"
 isort="*"
+mypy = "^1.4.1"
 
 [tool.black]
 line-length = 88
@@ -76,3 +77,14 @@ known-third-party = ["pydantic"]
 [tool.isort]
 profile = "black"
 skip = ["versions"]
+
+[tool.mypy]
+strict = false
+warn_unused_ignores = false
+ignore_missing_imports = true
+explicit_package_bases = true
+plugins = ["pydantic.mypy", "sqlalchemy.ext.mypy.plugin"]
+
+[[tool.mypy.overrides]]
+module = ["alembic.*", "cache.*"]
+ignore_errors = true
