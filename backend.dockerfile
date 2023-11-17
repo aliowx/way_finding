@@ -1,9 +1,8 @@
 FROM dr2.parswitch.com/devops/python:3-10
-
-# FROM dr.parswitch.com/python:3_10
-
 WORKDIR /app/
 ENV PYTHONPATH=/app
+
+COPY ./app/pyproject.toml ./app/poetry.lock /app/
 
 # Install Poetry version 1
 RUN pip install poetry fastapi uvicorn gunicorn
@@ -20,9 +19,8 @@ RUN pip install -r requirements.txt
 #     poetry config virtualenvs.create false
 
 # Copy poetry.lock* in case it doesn't exist in the repo
-COPY ./app/pyproject.toml ./app/poetry.lock /app/
 
 COPY ./gunicorn_conf.py ./start-server.sh  /
 COPY ./app .
-CMD [ "bash", "/start-server.sh" ]
+CMD [ "/bin/bash", "/start-server.sh" ]
 
