@@ -2,6 +2,8 @@ FROM dr2.parswitch.com/devops/python:3-10
 WORKDIR /app/
 ENV PYTHONPATH=/app
 
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 COPY ./app/pyproject.toml ./app/poetry.lock* /app/
 
 # Install Poetry version 1
