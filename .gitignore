@@ -133,3 +133,5 @@ dump.rdb
 
 # db data
 data/
+
+.idea
