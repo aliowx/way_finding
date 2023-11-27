@@ -32,6 +32,7 @@ pandas = "^2.0.0"
 requests = "^2.28.2"
 pydantic-settings = "^2.0.3"
 pydantic-core = "^2.10.1"
+pytest-asyncio = "^0.21.1"
 
 [build-system]
 requires = ["poetry-core"]
