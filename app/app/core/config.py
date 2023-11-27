@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     POSTGRES_DB: str
     POSTGRES_TEST_DB: str
     POSTGRES_PORT: int
+    POSTGRES_TEST_DB: str
 
     PROJECT_NAME: str
     API_V1_STR: str = "/api/v1"
