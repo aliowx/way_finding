@@ -37,13 +37,13 @@ async def db() -> AsyncSession:
     async_engine = engine
     async_session = async_session_maker
 
-    async with async_session() as s:
-        async with async_engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        yield s
+    async with async_session() as session:
+        async with async_engine.begin() as connection:
+            await connection.run_sync(Base.metadata.create_all)
+        yield session
 
-    async with async_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+    async with async_engine.begin() as connection:
+        await connection.run_sync(Base.metadata.drop_all)
         pass
 
     await async_engine.dispose()

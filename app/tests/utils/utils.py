@@ -17,10 +17,13 @@ def random_email() -> str:
 
 async def get_superuser_token_headers(client: AsyncClient) -> Dict[str, str]:
     payload = {
-        "email": settings.FIRST_SUPERUSER,
+        "username": settings.FIRST_SUPERUSER,
         "password": settings.FIRST_SUPERUSER_PASSWORD,
     }
-    response = await client.post(f"{settings.API_V1_STR}/users/token", json=payload)
+    response = await client.post(
+        f"{settings.API_V1_STR}/users/login/access-token",
+        data=payload
+    )
     tokens = response.json()
     access_token = tokens.get("access_token", None)
     headers = {"Authorization": f"Bearer {access_token}"}

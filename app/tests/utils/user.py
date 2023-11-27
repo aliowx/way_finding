@@ -13,9 +13,9 @@ from tests.utils.utils import random_email, random_lower_string
 async def user_authentication_headers(
     client: AsyncClient, email: str, password: str
 ) -> Dict[str, str]:
-    payload = {"email": email, "password": password}
+    payload = {"username": email, "password": password}
 
-    response = await client.post(f"{settings.API_V1_STR}/users/token", json=payload)
+    response = await client.post(f"{settings.API_V1_STR}/users/login/access-token", data=payload)
     tokens = response.json()
     auth_token = tokens.get("access_token", None)
     headers = {"Authorization": f"Bearer {auth_token}"}
