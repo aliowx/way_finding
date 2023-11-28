@@ -36,14 +36,12 @@ async def login_access_token(
         db, email=form_data.username, password=form_data.password
     )
     if not user:
-        raise exc.InternalServiceError(
-            status_code=400,
+        raise exc.ValidationException(
             detail="Incorrect email or password",
             msg_code=utils.MessageCodes.incorrect_email_or_password,
         )
     elif not crud.user.is_active(user):
-        raise exc.InternalServiceError(
-            status_code=400,
+        raise exc.ValidationException(
             detail="Inactive user",
             msg_code=utils.MessageCodes.inactive_user,
         )
@@ -81,21 +79,18 @@ async def reset_password(
     """
     id_ = verify_password_reset_token(token)
     if not id_:
-        raise exc.InternalServiceError(
-            status_code=400,
+        raise exc.ValidationException(
             detail="Invalid token.",
             msg_code=utils.MessageCodes.bad_request,
         )
     user = await crud.user.get(db, id=int(id_))
     if not user:
-        raise exc.InternalServiceError(
-            status_code=400,
+        raise exc.AlreadyExistException(
             detail="The user with this username does not exist in the system",
             msg_code=utils.MessageCodes.bad_request,
         )
     elif not crud.user.is_active(user):
-        raise exc.InternalServiceError(
-            status_code=400,
+        raise exc.ValidationException(
             detail="Inactive user",
             msg_code=utils.MessageCodes.bad_request,
         )
@@ -133,8 +128,7 @@ async def create_user(
     """
     user = await crud.user.get_by_email(db, email=user_in.email)
     if user:
-        raise exc.InternalServiceError(
-            status_code=400,
+        raise exc.AlreadyExistException(
             detail="The user with this username already exists in the system.",
             msg_code=utils.MessageCodes.bad_request,
         )
@@ -178,16 +172,14 @@ async def read_user_by_id(
     """
     user = await crud.user.get(db, id=user_id)
     if not user:
-        raise exc.InternalServiceError(
-            status_code=404,
+        raise exc.NotFoundException(
             detail="User not found",
             msg_code=utils.MessageCodes.not_found,
         )
     if user == current_user:
         return APIResponse(user)
     if not crud.user.is_superuser(current_user):
-        raise exc.InternalServiceError(
-            status_code=400,
+        raise exc.ForbiddenException(
             detail="The user doesn't have enough privileges",
             msg_code=utils.MessageCodes.bad_request,
         )
@@ -206,8 +198,7 @@ async def update_user(
     """
     user = await crud.user.get(db, id=user_id)
     if not user:
-        raise exc.InternalServiceError(
-            status_code=404,
+        raise exc.NotFoundException(
             detail="The user with this username does not exist in the system",
             msg_code=utils.MessageCodes.not_found,
         )
