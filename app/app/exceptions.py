@@ -1,6 +1,6 @@
 import logging
 import traceback
-from typing import Any
+from typing import Any, Union
 
 from fastapi import HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
@@ -11,23 +11,17 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 
-class InternalServiceError(HTTPException):
-    """Error class for failed internal services"""
+class CustomHTTPException(HTTPException):
+    """Custom HTTPException class for common exception handling."""
 
     def __init__(
         self,
-        message=None,
-        msg_code=utils.MessageCodes.internal_error,
-        msg_status=utils.MessageStatus.FAILURE,
-        **kwargs,
-    ) -> None:
-        if not kwargs.get("status_code"):
-            kwargs["status_code"] = 500
-        if "detail" in kwargs:
-            message = kwargs.pop("detail")
-        super().__init__(detail=message, **kwargs)
+        status_code: int = status.HTTP_400_BAD_REQUEST,
+        msg_code: utils.MessageCodes = utils.MessageCodes.internal_error,
+        detail: Union[str, None] = None,
+    ):
+        super().__init__(status_code=status_code, detail=detail)
         self.msg_code = msg_code
-        self.msg_status = msg_status
 
 
 def get_traceback_info(exc: Exception):
@@ -37,76 +31,90 @@ def get_traceback_info(exc: Exception):
     return exception_type, traceback_str, traceback_full
 
 
-async def internal_service_exceptions_handler(request: Request, exc: Any):
-    exception_type, traceback_str, traceback_full = get_traceback_info(exc)
-    logger.error(f"Internal service error{exception_type}:\n{traceback_str}")
+def create_system_exception_handler(
+    status_code: str,
+    msg_code: str,
+):
+    async def exception_handler(request: Request, exc: Any):
+        exception_type, traceback_str, traceback_full = get_traceback_info(exc)
+        logger.error(f"Exception of type {exception_type}:\n{traceback_str}")
 
-    response = utils.APIErrorResponse(
-        data=str(exc.detail),
-        msg_code=exc.msg_code,
-        msg_status=exc.msg_status,
-        status_code=exc.status_code,
-    )
-    return response
+        response_data = {
+            "data": str(exc.errors()),
+            "msg_code": msg_code,
+            "status_code": status_code,
+        }
+        if settings.DEBUG:
+            raise
+        response = utils.APIErrorResponse(**response_data)
+        return response
 
-
-async def internal_exceptions_handler(request: Request, exc: Any):
-    exception_type, traceback_str, traceback_full = get_traceback_info(exc)
-    logger.error(f"Unhandled {exception_type} Exception Happened:\n{traceback_str}")
-
-    error_msg = ""
-    if settings.DEBUG:
-        error_msg = str(exc)
-
-    return utils.APIErrorResponse(
-        data=error_msg,
-        msg_code=utils.MessageCodes.internal_error,
-        msg_status=utils.MessageStatus.FAILURE,
-        status_code=500,
-    )
+    return exception_handler
 
 
-async def http_exception_handler(request: Request, exc: Any):
-    _, _, traceback_full = get_traceback_info(exc)
+def create_exception_handler(status_code):
+    async def exception_handler(request: Request, exc: Any):
+        exception_type, traceback_str, traceback_full = get_traceback_info(exc)
+        logger.error(f"Exception of type {exception_type}:\n{traceback_str}")
 
-    response = utils.APIErrorResponse(
-        data=exc.detail,
-        msg_code=utils.MessageCodes.internal_error,
-        msg_status=utils.MessageStatus.FAILURE,
-        status_code=exc.status_code,
-    )
-    return response
+        response_data = {
+            "data": str(exc.detail),
+            "msg_code": exc.msg_code,
+            "status_code": status_code,
+        }
+        if settings.DEBUG:
+            raise
+        response = utils.APIErrorResponse(**response_data)
+        return response
 
-
-async def validation_exceptions_handler(request: Request, exc: Any):
-    exception_type, traceback_str, traceback_full = get_traceback_info(exc)
-
-    response = utils.APIErrorResponse(
-        data=exc.errors(),
-        msg_code=utils.MessageCodes.input_error,
-        msg_status=utils.MessageStatus.FAILURE,
-        status_code=status.HTTP_400_BAD_REQUEST,
-    )
-    return response
+    return exception_handler
 
 
-async def response_validation_exceptions_handler(request: Request, exc: Any):
-    exception_type, traceback_str, traceback_full = get_traceback_info(exc)
-    logger.error("Internal service response validation error:\n{}".format(exc.errors()))
-
-    response = utils.APIErrorResponse(
-        data="",
-        msg_code=utils.MessageCodes.internal_error,
-        msg_status=2,
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    )
-    return response
+# Define custom exception classes
+class ValidationException(CustomHTTPException):
+    def __init__(self, detail: Union[str, None] = None, msg_code: utils.MessageCodes = None):
+        super().__init__(msg_code=msg_code, detail=detail)
 
 
+class NotFoundException(CustomHTTPException):
+    def __init__(self, detail: Union[str, None] = None, msg_code: utils.MessageCodes = None):
+        super().__init__(msg_code=msg_code, detail=detail)
+
+
+class AlreadyExistException(CustomHTTPException):
+    def __init__(self, detail: Union[str, None] = None, msg_code: utils.MessageCodes = None):
+        super().__init__(msg_code=msg_code, detail=detail)
+
+
+class InternalErrorException(CustomHTTPException):
+    def __init__(self, detail: Union[str, None] = None, msg_code: utils.MessageCodes = None):
+        super().__init__(msg_code=msg_code, detail=detail)
+
+
+class UnauthorizedException(CustomHTTPException):
+    def __init__(self, detail: Union[str, None] = None, msg_code: utils.MessageCodes = None):
+        super().__init__(msg_code=msg_code, detail=detail)
+
+
+class ForbiddenException(CustomHTTPException):
+    def __init__(self, detail: Union[str, None] = None, msg_code: utils.MessageCodes = None):
+        super().__init__(msg_code=msg_code, detail=detail)
+
+
+# Create a dictionary of exception handlers
 exception_handlers = {
-    HTTPException: http_exception_handler,
-    Exception: internal_exceptions_handler,
-    InternalServiceError: internal_service_exceptions_handler,
-    RequestValidationError: validation_exceptions_handler,
-    ResponseValidationError: response_validation_exceptions_handler,
+    ValidationException: create_exception_handler(status.HTTP_400_BAD_REQUEST),
+    NotFoundException: create_exception_handler(status.HTTP_404_NOT_FOUND),
+    AlreadyExistException: create_exception_handler(status.HTTP_409_CONFLICT),
+    InternalErrorException: create_exception_handler(
+        status.HTTP_500_INTERNAL_SERVER_ERROR
+    ),
+    UnauthorizedException: create_exception_handler(status.HTTP_401_UNAUTHORIZED),
+    ForbiddenException: create_exception_handler(status.HTTP_403_FORBIDDEN),
+    RequestValidationError: create_system_exception_handler(
+        status.HTTP_400_BAD_REQUEST, msg_code=utils.MessageCodes.bad_request
+    ),
+    ResponseValidationError: create_system_exception_handler(
+        status.HTTP_400_BAD_REQUEST, msg_code=utils.MessageCodes.internal_error
+    ),
 }

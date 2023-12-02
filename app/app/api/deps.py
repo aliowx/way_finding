@@ -53,9 +53,8 @@ async def get_current_active_superuser(
     current_user: models.User = Depends(get_current_user),
 ) -> models.User:
     if not crud.user.is_superuser(current_user):
-        raise exc.InternalServiceError(
-            status_code=403,
-            detail="Permision Error",
+        raise exc.ForbiddenException(
+            detail="Permission Error",
             msg_code=utils.MessageCodes.permisionError,
         )
     return current_user
