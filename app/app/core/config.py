@@ -16,8 +16,13 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     SECRET_KEY: str
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] | str = []
-    USERS_OPEN_REGISTRATION: bool = True
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 60 minutes * 24 hours = 1 days
+
+    # 60 minutes * 24 hours * 1 day = 1 days
+    JWT_EXPIRE_MINUTES: int
+    REFRESH_TOKEN_EXPIRE_MINUTES: int
+    SESSION_EXPIRE_MINUTES: int
+    ALGORITHM: str = "HS256"
+    JWT_ALGORITHM: str = "HS256"
 
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str

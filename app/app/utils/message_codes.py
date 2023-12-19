@@ -11,9 +11,13 @@ class MessageCodes:
     operation_failed = 5
     incorrect_email_or_password = 6
     inactive_user = 7
-    permisionError = 8
+    permissionError = 8
     already_exist_object = 9
     not_authorized = 10
+    expired_token = 11
+    access_token_not_found = 12
+    refresh_token_not_found = 13,
+    invalid_token = 14
     # services code start from 1001
 
     messages_names = {
@@ -27,7 +31,11 @@ class MessageCodes:
         7: "Inactive User",
         8: "Dont Have Access",
         9: "Object already exists",
-        10: "Not Authorized"
+        10: "Not Authorized",
+        11: "Expired Token",
+        12: "Access Token Not Found",
+        13: "Refresh Token Not Found",
+        14: "Invalid Token",
     }
 
     persian_message_names = {
@@ -41,5 +49,9 @@ class MessageCodes:
         7: "یوزر غیرفعال",
         8: "سظح دسترسی غیرمجاز",
         9: "دیتای وارد شده تکرای است",
-        10: "نام کاربری یا رمز عبور وارد نشده است"
+        10: "نام کاربری یا رمز عبور وارد نشده است",
+        11: "توکن منقضی شده است",
+        12: "اکسس توکن پیدا نشد",
+        13: "رفرش توکن پیدا نشد",
+        14: "توکن نامعتبر",
     }
