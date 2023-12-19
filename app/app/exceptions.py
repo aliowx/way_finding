@@ -70,6 +70,31 @@ def create_exception_handler(status_code):
     return exception_handler
 
 
+async def http_exception_handler(request: Request, exc: Any):
+    _, _, traceback_full = get_traceback_info(exc)
+    response = utils.APIErrorResponse(
+        data=exc.detail,
+        msg_code=utils.MessageCodes.internal_error,
+        status_code=exc.status_code,
+    )
+    return response
+
+
+async def internal_exceptions_handler(request: Request, exc: Any):
+    exception_type, traceback_str, traceback_full = get_traceback_info(exc)
+    logger.error(f"Unhandled {exception_type} Exception Happened:\n{traceback_str}")
+
+    error_msg = ""
+    if settings.DEBUG:
+        error_msg = str(exc)
+
+    return utils.APIErrorResponse(
+        data=error_msg,
+        msg_code=utils.MessageCodes.internal_error,
+        status_code=500,
+    )
+
+
 # Define custom exception classes
 class ValidationException(CustomHTTPException):
     def __init__(self, detail: Union[str, None] = None, msg_code: utils.MessageCodes = None):
@@ -103,6 +128,8 @@ class ForbiddenException(CustomHTTPException):
 
 # Create a dictionary of exception handlers
 exception_handlers = {
+    Exception: internal_exceptions_handler,
+    HTTPException: http_exception_handler,
     ValidationException: create_exception_handler(status.HTTP_400_BAD_REQUEST),
     NotFoundException: create_exception_handler(status.HTTP_404_NOT_FOUND),
     AlreadyExistException: create_exception_handler(status.HTTP_409_CONFLICT),
