@@ -1,55 +1,94 @@
+import logging
 from typing import AsyncGenerator
 
-from fastapi import Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
-from jose import jwt, exceptions
-from pydantic import ValidationError
+from fastapi import Depends, Request
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
+from redis.asyncio import client
+import redis.asyncio as redis
 
 from app import crud, exceptions as exc, models, schemas, utils
-from app.core import security
+from app.core.security import JWTHandler
 from app.core.config import settings
 from app.db.session import async_session
 
-reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_V1_STR}/users/login/access-token", auto_error=False
-)
+logger = logging.getLogger(__name__)
+http_bearer = HTTPBearer()
 
 
 async def get_db_async() -> AsyncGenerator:
+    """
+    Dependency function for get database
+    """
     async with async_session() as session:
         yield session
 
 
 async def get_current_user(
-    db: AsyncSession = Depends(get_db_async), token: str = Depends(reusable_oauth2)
-) -> models.User:
-    try:
-        if token is None:
-            raise exc.UnauthorizedException(
-                msg_code=utils.MessageCodes.not_authorized,
-                detail="Not Authorized"
-            )
-
-        payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
+    request: Request,
+    credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
+    db: AsyncSession = Depends(get_db_async),
+) -> schemas.User:
+    """
+    Dependency function for get user with access token
+    """
+    if credentials.scheme != "Bearer":
+        raise exc.UnauthorizedException(
+            detail="Invalid header",
+            msg_code=utils.MessageCodes.invalid_token
         )
-        token_data = schemas.TokenPayload(**payload)
-
-    except (jwt.JWTError, ValidationError, exceptions.ExpiredSignatureError):
-        raise exc.ForbiddenException(
-            msg_code=utils.MessageCodes.bad_request,
-            detail="Could not validate credentials",
-        )
-
-    user = await crud.user.get(db, id=int(token_data.sub))
-    if not user:
+    access_token = request.cookies.get("Access-Token")
+    if not access_token:
         raise exc.NotFoundException(
-            detail="The user with this username does not exist in the system",
-            msg_code=utils.MessageCodes.not_found,
+            detail="Access-Token is not provided",
+            msg_code=utils.MessageCodes.access_token_not_found
         )
-
+    if not credentials.credentials == access_token:
+        raise exc.UnauthorizedException(
+            detail="Invalid access token",
+            msg_code=utils.MessageCodes.invalid_token
+        )
+    token = JWTHandler.decode(access_token)
+    user_id = token.get("user_id")
+    if not user_id:
+        raise exc.UnauthorizedException(
+            detail="Invalid access token",
+            msg_code=utils.MessageCodes.invalid_token
+        )
+    user = await crud.user.get(db=db, id=int(user_id))
     return user
+
+
+async def get_current_user_with_refresh(
+    request: Request, credentials: HTTPAuthorizationCredentials = Depends(http_bearer)
+) -> schemas.User:
+    """
+    Dependency function for get user with refresh token
+    """
+    if credentials.scheme != "Bearer":
+        raise exc.UnauthorizedException(
+            detail="Invalid header",
+            msg_code=utils.MessageCodes.invalid_token
+        )
+    refresh_token = request.cookies.get("Refresh-Token")
+    if not refresh_token:
+        raise exc.NotFoundException(
+            detail="Refresh-Token is not provided",
+            msg_code=utils.MessageCodes.refresh_token_not_found
+        )
+    if not credentials.credentials == refresh_token:
+        raise exc.UnauthorizedException(
+            detail="Invalid refresh token",
+            msg_code=utils.MessageCodes.invalid_token
+        )
+    token = JWTHandler.decode(refresh_token)
+    user_id = token.get("verify")
+    if not user_id:
+        raise exc.UnauthorizedException(
+            detail="Invalid refresh token",
+            msg_code=utils.MessageCodes.invalid_token
+        )
+    return user_id
 
 
 def get_current_active_user(
@@ -69,6 +108,26 @@ async def get_current_active_superuser(
     if not crud.user.is_superuser(current_user):
         raise exc.ForbiddenException(
             detail="Permission Error",
-            msg_code=utils.MessageCodes.permisionError,
+            msg_code=utils.MessageCodes.permissionError,
         )
     return current_user
+
+
+async def get_redis() -> client.Redis:
+    """
+    Dependency function that get redis client
+    """
+    redis_url = "redis://:{}@{}:{}".format(
+        settings.REDIS_PASSWORD,
+        settings.REDIS_SERVER,
+        settings.REDIS_PORT,
+    )
+    redis_client = await redis.from_url(redis_url, decode_responses=True)
+    try:
+        if await redis_client.ping():
+            return redis_client
+    except Exception as e:
+        logger.error(logger.error(f"Redis connection failed\n{e}"))
+        raise exc.InternalErrorException(
+            msg_code=utils.MessageCodes.operation_failed,
+        ) from e
