@@ -18,6 +18,7 @@ class MessageCodes:
     access_token_not_found = 12
     refresh_token_not_found = 13,
     invalid_token = 14
+    already_verifide = 15
     # services code start from 1001
 
     messages_names = {
@@ -36,6 +37,7 @@ class MessageCodes:
         12: "Access Token Not Found",
         13: "Refresh Token Not Found",
         14: "Invalid Token",
+        15: "Already Verified",
     }
 
     persian_message_names = {
@@ -54,4 +56,5 @@ class MessageCodes:
         12: "اکسس توکن پیدا نشد",
         13: "رفرش توکن پیدا نشد",
         14: "توکن نامعتبر",
+        15: "قبلا تایید شده است",
     }

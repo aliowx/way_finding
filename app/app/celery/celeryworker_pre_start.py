@@ -28,7 +28,7 @@ def init() -> None:
 
 
 def main() -> None:
-    logger.info("Initializing service")
+    logger.info("Initializing services")
     init()
     logger.info("Service finished initializing")
 
