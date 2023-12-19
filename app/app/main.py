@@ -32,9 +32,8 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 @app.on_event("startup")
 async def startup():
     redis_cache = Cache()
-    url = f"redis://:{settings.REDIS_PASSWORD}@{settings.REDIS_SERVER}:{settings.REDIS_PORT}"
     await redis_cache.init(
-        host_url=url,
+        host_url=str(settings.REDIS_URI),
         prefix="api-cache",
         response_header="X-API-Cache",
         ignore_arg_types=[Request, Response, Session, AsyncSession, User],

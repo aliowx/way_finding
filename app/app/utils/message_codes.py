@@ -12,6 +12,8 @@ class MessageCodes:
     incorrect_email_or_password = 6
     inactive_user = 7
     permisionError = 8
+    already_exist_object = 9
+    not_authorized = 10
     # services code start from 1001
 
     messages_names = {
@@ -24,6 +26,8 @@ class MessageCodes:
         6: "Invalid Email Or Password",
         7: "Inactive User",
         8: "Dont Have Access",
+        9: "Object already exists",
+        10: "Not Authorized"
     }
 
     persian_message_names = {
@@ -36,4 +40,6 @@ class MessageCodes:
         6: "ایمیل یا پسورد نامعتبر",
         7: "یوزر غیرفعال",
         8: "سظح دسترسی غیرمجاز",
+        9: "دیتای وارد شده تکرای است",
+        10: "نام کاربری یا رمز عبور وارد نشده است"
     }
