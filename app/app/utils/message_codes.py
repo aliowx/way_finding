@@ -11,7 +11,7 @@ class MessageCodes:
     operation_failed = 5
     incorrect_email_or_password = 6
     inactive_user = 7
-    permissionError = 8
+    permission_error = 8
     already_exist_object = 9
     not_authorized = 10
     expired_token = 11
