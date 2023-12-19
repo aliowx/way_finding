@@ -1,5 +1,8 @@
 #!/bin/sh -e
+
 set -x
 
-flake8 app
-black app
+ruff app/app --fix
+isort app/app
+black app/app
+
