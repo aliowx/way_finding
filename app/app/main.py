@@ -1,4 +1,7 @@
+from typing import List
+
 from fastapi import FastAPI, Request, Response
+from fastapi.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 
 from sqlalchemy.orm import Session
@@ -7,13 +10,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.api_v1.api import api_router
 from app.core.config import settings
 from app.models import User
+from app.core.middleware import SessionMiddleware
 from app.exceptions import exception_handlers
 from cache import Cache
+
+
+def make_middleware() -> List[Middleware]:
+    middleware = [Middleware(SessionMiddleware)]
+    return middleware
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     exception_handlers=exception_handlers,
+    middleware=make_middleware(),
 )
 
 # Set all CORS enabled origins
