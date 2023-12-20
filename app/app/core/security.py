@@ -5,8 +5,8 @@ import jwt
 from passlib.context import CryptContext
 
 from app import exceptions as exc
-from app.utils import MessageCodes
 from app.core.config import settings
+from app.utils import MessageCodes
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -32,13 +32,17 @@ class JWTHandler:
     def encode(payload: Dict[str, Any]) -> str:
         expire = datetime.utcnow() + timedelta(minutes=JWTHandler.access_token_expire)
         payload.update({"exp": expire})
-        return jwt.encode(payload, JWTHandler.secret_key, algorithm=JWTHandler.algorithm)
+        return jwt.encode(
+            payload, JWTHandler.secret_key, algorithm=JWTHandler.algorithm
+        )
 
     @staticmethod
     def encode_refresh_token(payload: Dict[str, Any]) -> str:
         expire = datetime.utcnow() + timedelta(minutes=JWTHandler.refresh_token_expire)
         payload.update({"exp": expire})
-        return jwt.encode(payload, JWTHandler.secret_key, algorithm=JWTHandler.algorithm)
+        return jwt.encode(
+            payload, JWTHandler.secret_key, algorithm=JWTHandler.algorithm
+        )
 
     @staticmethod
     def decode(token: str) -> dict:

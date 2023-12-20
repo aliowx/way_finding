@@ -1,4 +1,4 @@
-from pydantic import ConfigDict, BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 # Shared properties

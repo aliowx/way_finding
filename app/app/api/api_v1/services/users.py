@@ -1,8 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import models, schemas, crud
-from app.utils import MessageCodes
+from app import crud
 from app import exceptions as exc
+from app import models, schemas
+from app.utils import MessageCodes
 
 
 async def read_user_by_id(
@@ -27,16 +28,16 @@ async def read_user_by_id(
 
 
 async def update_user(
-        user_id: int,
-        user_in: schemas.UserUpdate,
-        db: AsyncSession,
-        current_user: models.User,
+    user_id: int,
+    user_in: schemas.UserUpdate,
+    db: AsyncSession,
+    current_user: models.User,
 ) -> schemas.User:
     if not current_user.is_superuser:
         if not current_user.id == user_id:
             raise exc.ForbiddenException(
                 detail="You do not have permission to update other users",
-                msg_code=MessageCodes.permission_error
+                msg_code=MessageCodes.permission_error,
             )
 
     user = await crud.user.get(db, id=user_id)

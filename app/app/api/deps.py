@@ -1,15 +1,17 @@
 import logging
 from typing import AsyncGenerator
 
-from fastapi import Depends, Request
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy.ext.asyncio import AsyncSession
-from redis.asyncio import client
 import redis.asyncio as redis
+from fastapi import Depends, Request
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from redis.asyncio import client
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import crud, exceptions as exc, models, schemas, utils
-from app.core.security import JWTHandler
+from app import crud
+from app import exceptions as exc
+from app import models, schemas, utils
 from app.core.config import settings
+from app.core.security import JWTHandler
 from app.db.session import async_session
 
 logger = logging.getLogger(__name__)
@@ -34,26 +36,23 @@ async def get_current_user(
     """
     if credentials.scheme != "Bearer":
         raise exc.UnauthorizedException(
-            detail="Invalid header",
-            msg_code=utils.MessageCodes.invalid_token
+            detail="Invalid header", msg_code=utils.MessageCodes.invalid_token
         )
     access_token = request.cookies.get("Access-Token")
     if not access_token:
         raise exc.NotFoundException(
             detail="Access-Token is not provided",
-            msg_code=utils.MessageCodes.access_token_not_found
+            msg_code=utils.MessageCodes.access_token_not_found,
         )
     if not credentials.credentials == access_token:
         raise exc.UnauthorizedException(
-            detail="Invalid access token",
-            msg_code=utils.MessageCodes.invalid_token
+            detail="Invalid access token", msg_code=utils.MessageCodes.invalid_token
         )
     token = JWTHandler.decode(access_token)
     user_id = token.get("user_id")
     if not user_id:
         raise exc.UnauthorizedException(
-            detail="Invalid access token",
-            msg_code=utils.MessageCodes.invalid_token
+            detail="Invalid access token", msg_code=utils.MessageCodes.invalid_token
         )
     user = await crud.user.get(db=db, id=int(user_id))
     return user
@@ -67,26 +66,23 @@ async def get_current_user_with_refresh(
     """
     if credentials.scheme != "Bearer":
         raise exc.UnauthorizedException(
-            detail="Invalid header",
-            msg_code=utils.MessageCodes.invalid_token
+            detail="Invalid header", msg_code=utils.MessageCodes.invalid_token
         )
     refresh_token = request.cookies.get("Refresh-Token")
     if not refresh_token:
         raise exc.NotFoundException(
             detail="Refresh-Token is not provided",
-            msg_code=utils.MessageCodes.refresh_token_not_found
+            msg_code=utils.MessageCodes.refresh_token_not_found,
         )
     if not credentials.credentials == refresh_token:
         raise exc.UnauthorizedException(
-            detail="Invalid refresh token",
-            msg_code=utils.MessageCodes.invalid_token
+            detail="Invalid refresh token", msg_code=utils.MessageCodes.invalid_token
         )
     token = JWTHandler.decode(refresh_token)
     user_id = token.get("verify")
     if not user_id:
         raise exc.UnauthorizedException(
-            detail="Invalid refresh token",
-            msg_code=utils.MessageCodes.invalid_token
+            detail="Invalid refresh token", msg_code=utils.MessageCodes.invalid_token
         )
     return user_id
 

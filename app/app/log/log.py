@@ -1,14 +1,13 @@
-import logging
 import json
+import logging
 from typing import Callable
 
-from fastapi import Request, BackgroundTasks
-from fastapi.routing import APIRoute
+from fastapi import BackgroundTasks, Request
 from fastapi.responses import Response
+from fastapi.routing import APIRoute
 
-from app import crud, schemas, exceptions
+from app import crud, exceptions, schemas
 from app.db.session import async_session
-
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +34,7 @@ async def save_request_log_async(
 
     try:
         request_data["body"] = await request.json()
-    except Exception as e:
+    except Exception:
         pass
 
     request_log_data = {

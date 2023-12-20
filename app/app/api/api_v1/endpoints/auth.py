@@ -1,33 +1,30 @@
-import time
 import asyncio
+import time
 
-from fastapi import APIRouter, Depends, Response, Request
+from fastapi import APIRouter, Depends, Request, Response
+from redis.asyncio import client
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from redis.asyncio import client
-
+from app import exceptions as exc
 from app import schemas, utils
 from app.api import deps
 from app.api.api_v1 import services
-from app.utils import APIResponseType, APIResponse
-from app import exceptions as exc
+from app.utils import APIResponse, APIResponseType
 
 router = APIRouter()
 
 
 @router.post("/login")
 async def login(
-        response: Response,
-        user_in: schemas.LoginUser,
-        db: AsyncSession = Depends(deps.get_db_async),
-        cache: client.Redis = Depends(deps.get_redis)
+    response: Response,
+    user_in: schemas.LoginUser,
+    db: AsyncSession = Depends(deps.get_db_async),
+    cache: client.Redis = Depends(deps.get_redis),
 ) -> APIResponseType[schemas.Msg]:
     """Login"""
     start_time = time.time()
     try:
-        tokens = await services.login(
-            db=db, user_in=user_in, cache=cache
-        )
+        tokens = await services.login(db=db, user_in=user_in, cache=cache)
         elapsed_time = time.time() - start_time
         if elapsed_time < 1:
             await asyncio.sleep(1 - elapsed_time)
@@ -52,22 +49,20 @@ async def login(
 
 @router.post("/refresh")
 async def refresh_token(
-        request: Request,
-        response: Response,
-        user_id: str = Depends(deps.get_current_user_with_refresh),
-        cache: client.Redis = Depends(deps.get_redis)
+    request: Request,
+    response: Response,
+    user_id: str = Depends(deps.get_current_user_with_refresh),
+    cache: client.Redis = Depends(deps.get_redis),
 ) -> None:
     """Refresh token"""
     if not user_id:
         raise exc.NotFoundException(
-            detail="User not found",
-            msg_code=utils.MessageCodes.not_found
+            detail="User not found", msg_code=utils.MessageCodes.not_found
         )
     start_time = time.time()
     try:
         tokens = await services.refresh_token(
-            old_refresh_token=request.cookies.get("Refresh-Token", ""),
-            cache=cache
+            old_refresh_token=request.cookies.get("Refresh-Token", ""), cache=cache
         )
         elapsed_time = time.time() - start_time
         if elapsed_time < 1:
@@ -99,40 +94,36 @@ async def refresh_token(
 
 @router.post("/verify")
 async def verify(
-        request: Request,
-        db: AsyncSession = Depends(deps.get_db_async),
-        user_id: str = Depends(deps.get_current_user_with_refresh),
-        cache: client.Redis = Depends(deps.get_redis),
+    request: Request,
+    db: AsyncSession = Depends(deps.get_db_async),
+    user_id: str = Depends(deps.get_current_user_with_refresh),
+    cache: client.Redis = Depends(deps.get_redis),
 ) -> None:
     """Verify"""
     if not user_id:
         raise exc.NotFoundException(
-            detail="User not found",
-            msg_code=utils.MessageCodes.not_found
+            detail="User not found", msg_code=utils.MessageCodes.not_found
         )
     await services.verify(
         db=db,
         refresh_token=request.cookies.get("Refresh-Token", ""),
         session_id=request.cookies.get("Session-Id", ""),
-        cache=cache
+        cache=cache,
     )
 
 
 @router.post("/register")
 async def register(
-        user_in: schemas.UserCreate,
-        db: AsyncSession = Depends(deps.get_db_async)
+    user_in: schemas.UserCreate, db: AsyncSession = Depends(deps.get_db_async)
 ) -> APIResponseType[schemas.User]:
     """Register new user"""
-    response = await services.register(
-        db=db, user_in=user_in
-    )
+    response = await services.register(db=db, user_in=user_in)
     return APIResponse(response)
 
 
 @router.get("/me")
 async def me(
-        current_user: schemas.User = Depends(deps.get_current_user)
+    current_user: schemas.User = Depends(deps.get_current_user),
 ) -> APIResponseType[schemas.User]:
     """Retrieve current user"""
     return APIResponse(current_user)
@@ -140,15 +131,14 @@ async def me(
 
 @router.delete("/logout")
 async def logout(
-        request: Request,
-        response: Response,
-        current_user: schemas.User = Depends(deps.get_current_user),
-        cache: client.Redis = Depends(deps.get_redis)
+    request: Request,
+    response: Response,
+    current_user: schemas.User = Depends(deps.get_current_user),
+    cache: client.Redis = Depends(deps.get_redis),
 ) -> APIResponseType[schemas.Msg]:
     """Logout from system"""
     await services.logout(
-        refresh_token=request.cookies.get("Refresh-Token", ""),
-        cache=cache
+        refresh_token=request.cookies.get("Refresh-Token", ""), cache=cache
     )
     response.set_cookie(
         key="Refresh-Token",

@@ -1,4 +1,4 @@
-from typing import Union, Dict, Any
+from typing import Any, Dict, Union
 
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.ext.asyncio import AsyncSession

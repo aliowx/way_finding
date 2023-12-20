@@ -1,4 +1,5 @@
 import logging
+
 from rocketry import Rocketry
 
 logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)

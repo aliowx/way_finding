@@ -1,13 +1,12 @@
 from typing import Any
+
 from fastapi import APIRouter, Depends, WebSocket
 from fastapi.responses import HTMLResponse
-from celery.result import AsyncResult
 
 from app import models, schemas
 from app.api import deps
 from app.core.celery_app import celery_app
 from cache import Cache
-
 
 router = APIRouter()
 

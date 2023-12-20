@@ -2,16 +2,15 @@ from typing import List
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware import Middleware
-from starlette.middleware.cors import CORSMiddleware
-
-from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
+from starlette.middleware.cors import CORSMiddleware
 
 from app.api.api_v1.api import api_router
 from app.core.config import settings
-from app.models import User
 from app.core.middleware import SessionMiddleware
 from app.exceptions import exception_handlers
+from app.models import User
 from cache import Cache
 
 

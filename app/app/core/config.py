@@ -1,9 +1,8 @@
 from typing import Any, List, Optional, Union
 
-from pydantic import field_validator, AnyHttpUrl, EmailStr, PostgresDsn, RedisDsn
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import AnyHttpUrl, EmailStr, PostgresDsn, RedisDsn, field_validator
 from pydantic_core.core_schema import ValidationInfo
-
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REFRESH_TOKEN_KEY = "refresh_token:{token}"
 SESSION_ID_KEY = "session_id:{token}"

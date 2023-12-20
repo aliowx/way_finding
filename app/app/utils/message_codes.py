@@ -16,7 +16,7 @@ class MessageCodes:
     not_authorized = 10
     expired_token = 11
     access_token_not_found = 12
-    refresh_token_not_found = 13,
+    refresh_token_not_found = (13,)
     invalid_token = 14
     already_verifide = 15
     # services code start from 1001
