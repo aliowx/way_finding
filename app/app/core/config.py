@@ -5,6 +5,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic_core.core_schema import ValidationInfo
 
 
+REFRESH_TOKEN_KEY = "refresh_token:{token}"
+SESSION_ID_KEY = "session_id:{token}"
+
+
 class AsyncPostgresDsn(PostgresDsn):
     allowed_schemes = {"postgres+asyncpg", "postgresql+asyncpg"}
 

@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import schemas, crud, utils
 from app import exceptions as exc
 from app.core.security import JWTHandler
-from app.core.config import settings
+from app.core.config import settings, REFRESH_TOKEN_KEY, SESSION_ID_KEY
 
 
 async def register(db: AsyncSession, user_in: schemas.UserCreate) -> schemas.User:
@@ -18,11 +18,7 @@ async def register(db: AsyncSession, user_in: schemas.UserCreate) -> schemas.Use
             detail="The user with this username already exists",
             msg_code=utils.MessageCodes.bad_request,
         )
-    user_input = schemas.UserCreate(
-        password=user_in.password,
-        email=user_in.email,
-    )
-    user = await crud.user.create(db=db, obj_in=user_input)
+    user = await crud.user.create(db=db, obj_in=user_in)
     return user
 
 
@@ -52,9 +48,9 @@ async def login(
             "refresh_token": str(refresh_token),
         }
     )
-
+    key = REFRESH_TOKEN_KEY.format(token=refresh_token)
     await cache.set(
-        name=refresh_token, value=user.id, ex=JWTHandler.refresh_token_expire
+        name=key, value=user.id, ex=JWTHandler.refresh_token_expire
     )
     return schemas.Token(
         access_token=None,
@@ -74,8 +70,8 @@ async def logout(refresh_token: str, cache: client.Redis) -> None:
             detail="Refresh token not found",
             msg_code=utils.MessageCodes.refresh_token_not_found
         )
-
-    await cache.delete(refresh_token)
+    key = REFRESH_TOKEN_KEY.format(token=refresh_token)
+    await cache.delete(key)
     return None
 
 
@@ -102,8 +98,10 @@ async def verify(
             detail="Redis connection is not initialized",
             msg_code=utils.MessageCodes.internal_error
         )
+    session_id_key = SESSION_ID_KEY.format(token=session_id)
+    refresh_token_key = REFRESH_TOKEN_KEY.format(token=refresh_token)
     session_id_redis, user_id = await asyncio.gather(
-        cache.get(session_id), cache.get(refresh_token)
+        cache.get(session_id_key), cache.get(refresh_token_key)
     )
     if not user_id:
         raise exc.UnauthorizedException(
@@ -118,7 +116,7 @@ async def verify(
                 msg_code=utils.MessageCodes.not_found
             )
         await cache.set(
-            name=session_id, value=user_id, ex=settings.SESSION_EXPIRE_MINUTES * 60
+            name=session_id_key, value=user_id, ex=settings.SESSION_EXPIRE_MINUTES * 60
         )
     else:
         raise exc.ValidationException(
@@ -136,9 +134,10 @@ async def refresh_token(
             detail="Redis connection is not initialized",
             msg_code=utils.MessageCodes.internal_error
         )
+    old_key = REFRESH_TOKEN_KEY.format(token=old_refresh_token)
     user_id, ttl = await asyncio.gather(
-        cache.get(old_refresh_token),
-        cache.ttl(old_refresh_token)
+        cache.get(old_key),
+        cache.ttl(old_key)
     )
     if not user_id:
         exc.UnauthorizedException(
@@ -157,12 +156,12 @@ async def refresh_token(
             "access_token": str(access_token),
         }
     )
-
+    key = REFRESH_TOKEN_KEY.format(token=refresh_token)
     await asyncio.gather(
         cache.set(
-            name=refresh_token, value=user_id, ex=ttl
+            name=key, value=user_id, ex=ttl
         ),
-        cache.delete(old_refresh_token)
+        cache.delete(old_key)
     )
     return schemas.Token(
         access_token=access_token,
