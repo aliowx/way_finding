@@ -3,7 +3,12 @@ from typing import AsyncGenerator
 
 import redis.asyncio as redis
 from fastapi import Depends, Request
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import (
+    HTTPAuthorizationCredentials,
+    HTTPBasic,
+    HTTPBasicCredentials,
+    HTTPBearer,
+)
 from redis.asyncio import client
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,6 +21,7 @@ from app.db.session import async_session
 
 logger = logging.getLogger(__name__)
 http_bearer = HTTPBearer(auto_error=False)
+http_basic = HTTPBasic(auto_error=False)
 
 
 async def get_db_async() -> AsyncGenerator:
@@ -26,14 +32,11 @@ async def get_db_async() -> AsyncGenerator:
         yield session
 
 
-async def get_current_user(
+async def get_user_from_access_token(
     request: Request,
     credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
     db: AsyncSession = Depends(get_db_async),
 ) -> schemas.User:
-    """
-    Dependency function for get user with access token
-    """
     if credentials.scheme != "Bearer":
         raise exc.UnauthorizedException(
             detail="Invalid header", msg_code=utils.MessageCodes.invalid_token
@@ -55,6 +58,42 @@ async def get_current_user(
             detail="Invalid access token", msg_code=utils.MessageCodes.invalid_token
         )
     user = await crud.user.get(db=db, id=int(user_id))
+    return user
+
+
+async def get_current_user(
+    request: Request,
+    token: HTTPAuthorizationCredentials = Depends(http_bearer),
+    credentials: HTTPBasicCredentials = Depends(http_basic),
+    db: AsyncSession = Depends(get_db_async),
+) -> schemas.User:
+    """
+    Dependency function for get user with access token
+    """
+    if not (token or credentials):
+        raise exc.NotFoundException(
+            detail="Token or username and password not found",
+            msg_code=utils.MessageCodes.not_found,
+        )
+    user = None
+    if credentials:
+        user = await crud.user.authenticate(
+            db=db, email=credentials.username, password=credentials.password
+        )
+    elif token:
+        user = await get_user_from_access_token(
+            db=db, credentials=token, request=request
+        )
+
+    if not user:
+        exc.NotFoundException(
+            detail="User not found", msg_code=utils.MessageCodes.not_found
+        )
+
+    if not crud.user.is_active(user):
+        raise exc.ForbiddenException(
+            detail="Inactive user", msg_code=utils.MessageCodes.inactive_user
+        )
     return user
 
 
