@@ -1,2 +1,2 @@
-from .user import User
 from .request_log import RequestLog
+from .user import User

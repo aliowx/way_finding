@@ -97,32 +97,44 @@ async def internal_exceptions_handler(request: Request, exc: Any):
 
 # Define custom exception classes
 class ValidationException(CustomHTTPException):
-    def __init__(self, detail: Union[str, None] = None, msg_code: utils.MessageCodes = None):
+    def __init__(
+        self, detail: Union[str, None] = None, msg_code: utils.MessageCodes = None
+    ):
         super().__init__(msg_code=msg_code, detail=detail)
 
 
 class NotFoundException(CustomHTTPException):
-    def __init__(self, detail: Union[str, None] = None, msg_code: utils.MessageCodes = None):
+    def __init__(
+        self, detail: Union[str, None] = None, msg_code: utils.MessageCodes = None
+    ):
         super().__init__(msg_code=msg_code, detail=detail)
 
 
 class AlreadyExistException(CustomHTTPException):
-    def __init__(self, detail: Union[str, None] = None, msg_code: utils.MessageCodes = None):
+    def __init__(
+        self, detail: Union[str, None] = None, msg_code: utils.MessageCodes = None
+    ):
         super().__init__(msg_code=msg_code, detail=detail)
 
 
 class InternalErrorException(CustomHTTPException):
-    def __init__(self, detail: Union[str, None] = None, msg_code: utils.MessageCodes = None):
+    def __init__(
+        self, detail: Union[str, None] = None, msg_code: utils.MessageCodes = None
+    ):
         super().__init__(msg_code=msg_code, detail=detail)
 
 
 class UnauthorizedException(CustomHTTPException):
-    def __init__(self, detail: Union[str, None] = None, msg_code: utils.MessageCodes = None):
+    def __init__(
+        self, detail: Union[str, None] = None, msg_code: utils.MessageCodes = None
+    ):
         super().__init__(msg_code=msg_code, detail=detail)
 
 
 class ForbiddenException(CustomHTTPException):
-    def __init__(self, detail: Union[str, None] = None, msg_code: utils.MessageCodes = None):
+    def __init__(
+        self, detail: Union[str, None] = None, msg_code: utils.MessageCodes = None
+    ):
         super().__init__(msg_code=msg_code, detail=detail)
 
 

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import ConfigDict, BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class RequestLogInDBBase(BaseModel):

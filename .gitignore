@@ -137,3 +137,7 @@ data/
 # idea
 .idea
 app/.idea
+
+# ruff
+.ruff_cache
+

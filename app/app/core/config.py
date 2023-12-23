@@ -1,8 +1,11 @@
 from typing import Any, List, Optional, Union
 
-from pydantic import field_validator, AnyHttpUrl, EmailStr, PostgresDsn, RedisDsn
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import AnyHttpUrl, EmailStr, PostgresDsn, RedisDsn, field_validator
 from pydantic_core.core_schema import ValidationInfo
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+REFRESH_TOKEN_KEY = "refresh_token:{token}"
+SESSION_ID_KEY = "session_id:{token}"
 
 
 class AsyncPostgresDsn(PostgresDsn):
@@ -16,8 +19,13 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     SECRET_KEY: str
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] | str = []
-    USERS_OPEN_REGISTRATION: bool = True
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 60 minutes * 24 hours = 1 days
+
+    # 60 minutes * 24 hours * 1 day = 1 days
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+    REFRESH_TOKEN_EXPIRE_MINUTES: int
+    SESSION_EXPIRE_MINUTES: int
+    ALGORITHM: str = "HS256"
+    JWT_ALGORITHM: str = "HS256"
 
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str

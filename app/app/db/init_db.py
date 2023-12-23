@@ -5,7 +5,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import crud, schemas
 from app.core.config import settings
 
-
 logger = logging.getLogger(__name__)
 
 

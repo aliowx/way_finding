@@ -1,4 +1,4 @@
-from pydantic import ConfigDict, BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 # Shared properties
@@ -33,3 +33,13 @@ class User(UserInDBBase):
 # Additional properties stored in DB
 class UserInDB(UserInDBBase):
     hashed_password: str
+
+
+class UserIn(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class LoginUser(BaseModel):
+    email: EmailStr
+    password: str

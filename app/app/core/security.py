@@ -1,29 +1,14 @@
 from datetime import datetime, timedelta
-from typing import Any, Union
+from typing import Any, Dict
 
-from jose import jwt
+import jwt
 from passlib.context import CryptContext
 
+from app import exceptions as exc
 from app.core.config import settings
+from app.utils import MessageCodes
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-ALGORITHM = "HS256"
-
-
-def create_access_token(
-    subject: Union[str, Any], expires_delta: timedelta = None
-) -> str:
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(
-            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-        )
-    to_encode = {"exp": expire, "sub": str(subject)}
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -32,3 +17,65 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
+
+
+class JWTHandler:
+    secret_key = settings.SECRET_KEY
+    algorithm = settings.JWT_ALGORITHM
+    access_token_expire = settings.ACCESS_TOKEN_EXPIRE_MINUTES
+    refresh_token_expire = settings.REFRESH_TOKEN_EXPIRE_MINUTES
+
+    @staticmethod
+    def encode(payload: Dict[str, Any]) -> str:
+        expire = datetime.utcnow() + timedelta(minutes=JWTHandler.access_token_expire)
+        payload.update({"exp": expire})
+        return jwt.encode(
+            payload, JWTHandler.secret_key, algorithm=JWTHandler.algorithm
+        )
+
+    @staticmethod
+    def encode_refresh_token(payload: Dict[str, Any]) -> str:
+        expire = datetime.utcnow() + timedelta(minutes=JWTHandler.refresh_token_expire)
+        payload.update({"exp": expire})
+        return jwt.encode(
+            payload, JWTHandler.secret_key, algorithm=JWTHandler.algorithm
+        )
+
+    @staticmethod
+    def decode(token: str) -> dict:
+        try:
+            result: dict = jwt.decode(
+                token, JWTHandler.secret_key, algorithms=[JWTHandler.algorithm]
+            )
+            exp = result.get("exp")
+            if exp and datetime.utcfromtimestamp(exp) < datetime.utcnow():
+                raise exc.InternalErrorException(
+                    detail="Token expired",
+                    msg_code=MessageCodes.expired_token,
+                )
+            return result
+        except jwt.ExpiredSignatureError:
+            raise exc.InternalErrorException(
+                detail="Token expired",
+                msg_code=MessageCodes.expired_token,
+            )
+        except jwt.InvalidTokenError:
+            raise exc.InternalErrorException(
+                detail="Invalid token",
+                msg_code=MessageCodes.invalid_token,
+            )
+
+    @staticmethod
+    def decode_expired(token: str) -> dict:
+        try:
+            return jwt.decode(
+                token,
+                JWTHandler.secret_key,
+                algorithms=[JWTHandler.algorithm],
+                options={"verify_exp": False},
+            )
+        except jwt.InvalidTokenError:
+            raise exc.InternalErrorException(
+                detail="Invalid token",
+                msg_code=MessageCodes.invalid_token,
+            )
