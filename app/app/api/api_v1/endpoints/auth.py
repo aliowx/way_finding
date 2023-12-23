@@ -42,6 +42,13 @@ async def login(
         httponly=True,
         samesite="strict",
     )
+    response.set_cookie(
+        key="Access-Token",
+        value=tokens.access_token,
+        secure=True,
+        httponly=True,
+        samesite="strict",
+    )
     response.headers["X-CSRF-TOKEN"] = tokens.csrf_token
 
     return APIResponse(schemas.Msg(msg="You have successfully logged in"))

@@ -41,16 +41,18 @@ async def login(
     refresh_token = JWTHandler.encode_refresh_token(
         payload={"sub": "refresh_token", "verify": str(user.id)}
     )
+    access_token = JWTHandler.encode(payload={"user_id": str(user.id)})
     csrf_token = JWTHandler.encode_refresh_token(
         payload={
             "sub": "csrf_token",
             "refresh_token": str(refresh_token),
+            "access_token": str(access_token),
         }
     )
     key = REFRESH_TOKEN_KEY.format(token=refresh_token)
     await cache.set(name=key, value=user.id, ex=JWTHandler.refresh_token_expire)
     return schemas.Token(
-        access_token=None,
+        access_token=access_token,
         refresh_token=refresh_token,
         csrf_token=csrf_token,
     )

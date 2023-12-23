@@ -27,9 +27,10 @@ class TestAuth:
     async def test_login(self, client: AsyncClient):
         response = await client.post(f"{settings.API_V1_STR}/auth/login", json=self.data)
         assert response.status_code == 200
-        assert response.cookies.get("Access-Token") is None
+        assert response.cookies.get("Access-Token") is not None
         assert response.cookies.get("Refresh-Token") is not None
         TestAuth.refresh_token = response.cookies["Refresh-Token"]
+        TestAuth.access_token = response.cookies["Access-Token"]
         TestAuth.headers = {"Authorization": "Bearer " + TestAuth.refresh_token}
         corrupted_data = self.data.copy()
         corrupted_data["email"] = "test"
