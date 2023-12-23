@@ -15,7 +15,7 @@ from app.core.security import JWTHandler
 from app.db.session import async_session
 
 logger = logging.getLogger(__name__)
-http_bearer = HTTPBearer()
+http_bearer = HTTPBearer(auto_error=False)
 
 
 async def get_db_async() -> AsyncGenerator:
@@ -104,7 +104,7 @@ async def get_current_active_superuser(
     if not crud.user.is_superuser(current_user):
         raise exc.ForbiddenException(
             detail="Permission Error",
-            msg_code=utils.MessageCodes.permissionError,
+            msg_code=utils.MessageCodes.permission_error,
         )
     return current_user
 
@@ -113,11 +113,7 @@ async def get_redis() -> client.Redis:
     """
     Dependency function that get redis client
     """
-    redis_url = "redis://:{}@{}:{}".format(
-        settings.REDIS_PASSWORD,
-        settings.REDIS_SERVER,
-        settings.REDIS_PORT,
-    )
+    redis_url = str(settings.REDIS_URI)
     redis_client = await redis.from_url(redis_url, decode_responses=True)
     try:
         if await redis_client.ping():

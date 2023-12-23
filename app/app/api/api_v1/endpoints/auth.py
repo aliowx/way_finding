@@ -74,7 +74,11 @@ async def refresh_token(
             await asyncio.sleep(1 - elapsed_time)
         raise e from None
 
-    assert tokens.access_token is not None
+    if not tokens.access_token:
+        raise exc.NotFoundException(
+            detail="Access token not found",
+            msg_code=utils.MessageCodes.not_found,
+        )
     response.set_cookie(
         key="Refresh-Token",
         value=tokens.refresh_token,

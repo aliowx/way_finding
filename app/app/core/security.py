@@ -11,9 +11,6 @@ from app.utils import MessageCodes
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-ALGORITHM = "HS256"
-
-
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
@@ -25,7 +22,7 @@ def get_password_hash(password: str) -> str:
 class JWTHandler:
     secret_key = settings.SECRET_KEY
     algorithm = settings.JWT_ALGORITHM
-    access_token_expire = settings.JWT_EXPIRE_MINUTES
+    access_token_expire = settings.ACCESS_TOKEN_EXPIRE_MINUTES
     refresh_token_expire = settings.REFRESH_TOKEN_EXPIRE_MINUTES
 
     @staticmethod

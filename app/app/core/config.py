@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] | str = []
 
     # 60 minutes * 24 hours * 1 day = 1 days
-    JWT_EXPIRE_MINUTES: int
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
     REFRESH_TOKEN_EXPIRE_MINUTES: int
     SESSION_EXPIRE_MINUTES: int
     ALGORITHM: str = "HS256"
