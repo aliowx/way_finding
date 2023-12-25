@@ -45,6 +45,7 @@ black="*"
 ruff="*"
 isort="*"
 mypy = "^1.7.1"
+aiosqlite = "^0.19.0"
 
 [tool.black]
 line-length = 88

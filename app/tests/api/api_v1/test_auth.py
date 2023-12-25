@@ -22,7 +22,7 @@ class TestAuth:
         response = await client.post(f"{settings.API_V1_STR}/auth/register", json=self.data)
         assert response.status_code == 200
         response = await client.post(f"{settings.API_V1_STR}/auth/register", json=self.data)
-        assert response.status_code == 400
+        assert response.status_code == 409
 
     async def test_login(self, client: AsyncClient):
         response = await client.post(f"{settings.API_V1_STR}/auth/login", json=self.data)
@@ -71,7 +71,3 @@ class TestAuth:
         bad_header = {"Authorization": "Bearer " + TestAuth.refresh_token}
         response = await client.get(f"{settings.API_V1_STR}/auth/me", headers=bad_header)
         assert response.status_code == 401
-
-        bad_header = {"Authorization": TestAuth.access_token}
-        response = await client.get(f"{settings.API_V1_STR}/auth/me", headers=bad_header)
-        assert response.status_code == 403

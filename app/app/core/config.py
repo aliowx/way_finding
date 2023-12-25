@@ -35,7 +35,6 @@ class Settings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
-    POSTGRES_TEST_DB: str
     POSTGRES_PORT: int
     SQLALCHEMY_DATABASE_ASYNC_URI: Optional[AsyncPostgresDsn] = None
 

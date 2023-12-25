@@ -1,11 +1,11 @@
 import asyncio
-from typing import Dict, Generator
+from typing import Dict, Generator, AsyncGenerator
 
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from httpx import AsyncClient
-
+from app.api.deps import get_db_async
 from app.core.config import settings
 from app.main import app
 from app.db import Base
@@ -13,16 +13,27 @@ from tests.utils.user import authentication_token_from_email
 from tests.utils.utils import get_superuser_token_headers
 
 
+ASYNC_SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+
 engine = create_async_engine(
-    settings.POSTGRES_TEST_DB,
+    ASYNC_SQLALCHEMY_DATABASE_URL, pool_pre_ping=True
 )
-async_session_maker = async_sessionmaker(
-    engine,
+
+async_session_local = async_sessionmaker(
+    bind=engine,
     class_=AsyncSession,
     expire_on_commit=False,
     autocommit=False,
     autoflush=False,
 )
+
+
+async def override_get_db_async() -> AsyncGenerator:
+    async with async_session_local() as db:
+        yield db
+        await db.commit()
+
+app.dependency_overrides[get_db_async] = override_get_db_async
 
 
 @pytest.fixture(scope="session")
@@ -32,10 +43,10 @@ def event_loop(request) -> Generator:  # noqa: indirect usage
     loop.close()
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(scope="session")
 async def db() -> AsyncSession:
     async_engine = engine
-    async_session = async_session_maker
+    async_session = async_session_local
 
     async with async_session() as session:
         async with async_engine.begin() as connection:
