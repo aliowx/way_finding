@@ -1,16 +1,13 @@
 import asyncio
-from typing import Dict, Generator, AsyncGenerator
+from typing import Generator, AsyncGenerator
 
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from httpx import AsyncClient
 from app.api.deps import get_db_async
-from app.core.config import settings
 from app.main import app
 from app.db import Base
-from tests.utils.user import authentication_token_from_email
-from tests.utils.utils import get_superuser_token_headers
 
 
 ASYNC_SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
@@ -53,9 +50,9 @@ async def db() -> AsyncSession:
             await connection.run_sync(Base.metadata.create_all)
         yield session
 
-    async with async_engine.begin() as connection:
-        await connection.run_sync(Base.metadata.drop_all)
-        pass
+    # async with async_engine.begin() as connection:
+    #     await connection.run_sync(Base.metadata.drop_all)
+    #     pass
 
     await async_engine.dispose()
 
@@ -64,17 +61,3 @@ async def db() -> AsyncSession:
 async def client() -> AsyncClient:
     async with AsyncClient(app=app, base_url="http://test") as client:
         yield client
-
-
-@pytest_asyncio.fixture(scope="module")
-async def superuser_token_headers(client: AsyncClient) -> Dict[str, str]:
-    return await get_superuser_token_headers(client)
-
-
-@pytest_asyncio.fixture(scope="module")
-async def normal_user_token_headers(
-    client: AsyncClient, db: AsyncSession
-) -> dict[str, str]:
-    return await authentication_token_from_email(
-        client=client, email=settings.EMAIL_TEST_USER, db=db
-    )
