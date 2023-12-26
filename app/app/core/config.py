@@ -29,7 +29,6 @@ class Settings(BaseSettings):
 
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str
-    EMAIL_TEST_USER: EmailStr
 
     POSTGRES_SERVER: str
     POSTGRES_USER: str
