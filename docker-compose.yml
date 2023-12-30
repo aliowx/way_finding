@@ -1,4 +1,4 @@
-version: '3.7'
+version: "3"
 
 services:
   backend:
@@ -11,7 +11,7 @@ services:
     env_file:
       - .env
     ports:
-      - "8091:80"
+      - "8091:1080"
     volumes:
       - ./app:/app/
 
@@ -33,7 +33,6 @@ services:
     build:
       context: .
       dockerfile: celeryworker.dockerfile
-#    command: celery -A celery.main.celery_app worker --loglevel=INFO
 
   rocketry-worker:
     image: rocketry-img
