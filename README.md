@@ -1,8 +1,11 @@
 # fastapi-postgres-boilerplate
 This project template which uses FastAPi, Alembic, SQLAlchemy as ORM, Rocketry as scheduler, Celery as async task manager. It shows a complete async CRUD template. Also I setup cache app with invalidate feature. 
 
+## Local Development with Poetry:
 
-## Set environment variables
+[check this page](app/README.md).
+
+## Dockerized Deployment:
 
 Create an **.env** file on root folder and copy the content from **.env.example**. Feel free to change it according to your own configuration.
 
@@ -31,6 +34,16 @@ docker-compose up -d --build
 If you want to use cache in your project, it is better to read it's documentation first:
 [cache document](/app/cache/cache-doc.md)
 
+## Run Test 
+Before running other tests, it is recommended to execute the CRUD tests first. 
+This ensures the creation of initial data necessary for subsequent tests.
+
+```bash
+# Run CRUD tests:
+pytest tests/crud/
+# Run other tests:
+pytest tests
+```
 
 ## TODO List:
 - [x] Add Custom Exception handler
