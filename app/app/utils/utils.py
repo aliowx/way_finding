@@ -27,5 +27,5 @@ def generate_excel_file(path, data: dict, title: str = "Report") -> Tuple[str, s
     df = pd.DataFrame(data)
     writer = ExcelWriter(file_path)
     df.to_excel(writer, title, index=False)
-    writer.save()
+    writer.close()
     return file_path, file_name

@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Any, Dict
+from typing import Any
 
 import jwt
 from passlib.context import CryptContext
@@ -26,7 +26,7 @@ class JWTHandler:
     refresh_token_expire = settings.REFRESH_TOKEN_EXPIRE_MINUTES
 
     @staticmethod
-    def encode(payload: Dict[str, Any]) -> str:
+    def encode(payload: dict[str, Any]) -> str:
         expire = datetime.utcnow() + timedelta(minutes=JWTHandler.access_token_expire)
         payload.update({"exp": expire})
         return jwt.encode(
@@ -34,7 +34,7 @@ class JWTHandler:
         )
 
     @staticmethod
-    def encode_refresh_token(payload: Dict[str, Any]) -> str:
+    def encode_refresh_token(payload: dict[str, Any]) -> str:
         expire = datetime.utcnow() + timedelta(minutes=JWTHandler.refresh_token_expire)
         payload.update({"exp": expire})
         return jwt.encode(

@@ -1,6 +1,6 @@
 import logging
 import traceback
-from typing import Any, Union
+from typing import Any
 
 from fastapi import HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
@@ -18,7 +18,7 @@ class CustomHTTPException(HTTPException):
         self,
         status_code: int = status.HTTP_400_BAD_REQUEST,
         msg_code: utils.MessageCodes = utils.MessageCodes.internal_error,
-        detail: Union[str, None] = None,
+        detail: str | None = None,
     ):
         super().__init__(status_code=status_code, detail=detail)
         self.msg_code = msg_code

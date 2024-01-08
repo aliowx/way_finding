@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Union
+from typing import Any
 
 from pydantic import AnyHttpUrl, EmailStr, PostgresDsn, RedisDsn, field_validator
 from pydantic_core.core_schema import ValidationInfo
@@ -18,7 +18,7 @@ class Settings(BaseSettings):
 
     DEBUG: bool = False
     SECRET_KEY: str
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] | str = []
+    BACKEND_CORS_ORIGINS: list[AnyHttpUrl] | str = []
 
     # 60 minutes * 24 hours * 1 day = 1 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int
@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
     POSTGRES_PORT: int
-    SQLALCHEMY_DATABASE_ASYNC_URI: Optional[AsyncPostgresDsn] = None
+    SQLALCHEMY_DATABASE_ASYNC_URI: AsyncPostgresDsn | None = None
 
     RABBITMQ_USERNAME: str
     RABBITMQ_PASSWORD: str
@@ -46,12 +46,12 @@ class Settings(BaseSettings):
     REDIS_DATABASE: int = 0
     REDIS_USERNAME: str = ""
     REDIS_PASSWORD: str
-    REDIS_TIMEOUT: Optional[int] = 5
-    REDIS_URI: Optional[RedisDsn] = None
+    REDIS_TIMEOUT: int | None = 5
+    REDIS_URI: RedisDsn | None = None
 
     @classmethod
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
+    def assemble_cors_origins(cls, v: str | list[str]) -> list[str] | str:
         if isinstance(v, str):
             return [i.strip() for i in v.strip("[]").split(",")]
         elif isinstance(v, (list, str)):
@@ -63,7 +63,7 @@ class Settings(BaseSettings):
         return [str(origin).strip("/") for origin in self.BACKEND_CORS_ORIGINS]
 
     @field_validator("SQLALCHEMY_DATABASE_ASYNC_URI", mode="before")
-    def assemble_async_db_connection(cls, v: Optional[str], values: Any) -> Any:
+    def assemble_async_db_connection(cls, v: str | None, values: Any) -> Any:
         if isinstance(v, str):
             return v
         return AsyncPostgresDsn.build(
@@ -78,7 +78,7 @@ class Settings(BaseSettings):
     @field_validator("REDIS_URI", mode="before")
     @classmethod
     def assemble_redis_URI_connection(
-        cls, v: Optional[str], values: ValidationInfo
+        cls, v: str | None, values: ValidationInfo
     ) -> Any:
         if isinstance(v, str):
             return v
