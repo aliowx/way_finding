@@ -24,7 +24,6 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     REFRESH_TOKEN_EXPIRE_MINUTES: int
     SESSION_EXPIRE_MINUTES: int
-    ALGORITHM: str = "HS256"
     JWT_ALGORITHM: str = "HS256"
 
     FIRST_SUPERUSER: EmailStr

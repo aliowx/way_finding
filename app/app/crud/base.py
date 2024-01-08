@@ -4,9 +4,8 @@ from typing import Any, Generic, Sequence, Type, TypeVar, Union
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
-from sqlalchemy import Row, RowMapping, exc, func
+from sqlalchemy import Row, RowMapping, and_, exc, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
 
 from app.db.base_class import Base
 
@@ -27,15 +26,25 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         self.model = model
 
-    async def get(self, db: AsyncSession, id: int | str) -> ModelType | None:
-        query = select(self.model).where(self.model.id == id)
+    async def get(self, db: AsyncSession, id_: int | str) -> ModelType | None:
+        query = select(self.model).where(
+            and_(
+                self.model.id == id_,
+                self.model.is_deleted.is_(None),
+            ),
+        )
         response = await db.execute(query)
         return response.scalar_one_or_none()
 
     async def get_by_ids(
         self, db: AsyncSession, list_ids: list[int | str]
     ) -> Sequence[Row | RowMapping | Any]:
-        query = select(self.model).where(self.model.id.in_(list_ids))
+        query = select(self.model).where(
+            and_(
+                self.model.id.in_(list_ids),
+                self.model.is_deleted.is_(None),
+            )
+        )
         response = await db.execute(query)
         return response.scalars().all()
 
@@ -61,7 +70,12 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         else:
             order_by.append(getattr(self.model, order_field).asc())
 
-        query = select(self.model).order_by(*order_by).offset(skip)
+        query = (
+            select(self.model)
+            .where(self.model.is_deleted.is_(None))
+            .order_by(*order_by)
+            .offset(skip)
+        )
 
         if limit is not None:
             query = query.limit(limit)
@@ -80,7 +94,12 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             order_by = []
         order_by.append(self.model.id.asc())
 
-        query = select(self.model).order_by(*order_by).offset(skip)
+        query = (
+            select(self.model)
+            .where(self.model.is_deleted.is_(None))
+            .order_by(*order_by)
+            .offset(skip)
+        )
         if limit is None:
             response = await db.execute(query)
             return response.scalars().all()
@@ -109,7 +128,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self,
         db: AsyncSession,
         db_obj: ModelType,
-        obj_in: UpdateSchemaType | dict[str, Any] | ModelType,
+        obj_in: UpdateSchemaType | dict[str, Any] | ModelType | None = None,
     ) -> ModelType:
         if obj_in is not None:
             obj_data = jsonable_encoder(db_obj)
@@ -127,10 +146,18 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         await db.refresh(db_obj)
         return db_obj
 
-    async def remove(self, db: AsyncSession, *, id: int | str) -> ModelType:
-        query = select(self.model).where(self.model.id == id)
+    async def remove(self, db: AsyncSession, id_: int | str) -> ModelType | None:
+        query = (
+            update(self.model)
+            .where(
+                and_(
+                    self.model.id == id_,
+                    self.model.is_deleted.is_(None),
+                )
+            )
+            .values(is_deleted=datetime.utcnow())
+            .returning(self.model)
+        )
         response = await db.execute(query)
-        obj = response.scalar_one()
-        await db.delete(obj)
         await db.commit()
-        return obj
+        return response.scalar_one_or_none()

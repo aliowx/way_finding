@@ -11,7 +11,7 @@ async def read_user_by_id(
     current_user: models.User,
     db: AsyncSession,
 ) -> schemas.User:
-    user = await crud.user.get(db, id=user_id)
+    user = await crud.user.get(db, id_=user_id)
     if not user:
         raise exc.NotFoundException(
             detail="User not found",
@@ -46,5 +46,7 @@ async def update_user(
             detail="The user with this username does not exist",
             msg_code=MessageCodes.not_found,
         )
-    user = await crud.user.update(db, db_obj=user, obj_in=user_in)
+    user = await crud.user.update(
+        db, db_obj=user, obj_in=user_in.model_dump(exclude_none=True)
+    )
     return user
