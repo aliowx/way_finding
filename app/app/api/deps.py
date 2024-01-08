@@ -57,7 +57,7 @@ async def get_user_from_access_token(
         raise exc.UnauthorizedException(
             detail="Invalid access token", msg_code=utils.MessageCodes.invalid_token
         )
-    user = await crud.user.get(db=db, id=int(user_id))
+    user = await crud.user.get(db=db, id_=int(user_id))
     return user
 
 

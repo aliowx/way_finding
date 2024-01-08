@@ -17,6 +17,11 @@ class Base:
     def __tablename__(cls) -> str:
         return cls.__name__.lower()
 
+    is_deleted = Column(
+        DateTime(timezone=True),
+        nullable=True,
+        index=True,
+    )
     created = Column(DateTime(timezone=True), default=datetime.utcnow, index=True)
     modified = Column(
         DateTime(timezone=True),
