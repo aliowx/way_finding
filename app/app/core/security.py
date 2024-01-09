@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import jwt
@@ -73,6 +73,30 @@ class JWTHandler:
                 JWTHandler.secret_key,
                 algorithms=[JWTHandler.algorithm],
                 options={"verify_exp": False},
+            )
+        except jwt.InvalidTokenError:
+            raise exc.InternalErrorException(
+                detail="Invalid token",
+                msg_code=MessageCodes.invalid_token,
+            )
+
+    @staticmethod
+    def token_expiration(token: str) -> datetime | None:
+        try:
+            decoded_token = jwt.decode(
+                token,
+                JWTHandler.secret_key,
+                algorithms=[JWTHandler.algorithm],
+                options={"verify_exp": True},
+            )
+            exp = decoded_token.get("exp")
+            if exp:
+                return datetime.fromtimestamp(exp).replace(tzinfo=timezone.utc)
+            return None
+        except jwt.ExpiredSignatureError:
+            raise exc.InternalErrorException(
+                detail="Token expired",
+                msg_code=MessageCodes.expired_token,
             )
         except jwt.InvalidTokenError:
             raise exc.InternalErrorException(

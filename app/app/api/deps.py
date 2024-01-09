@@ -32,6 +32,23 @@ async def get_db_async() -> AsyncGenerator:
         yield session
 
 
+async def get_user_from_cookie(request: Request, db: AsyncSession):
+    access_token = request.cookies.get("Access-Token")
+    if not access_token:
+        raise exc.NotFoundException(
+            detail="Access-Token is not provided",
+            msg_code=utils.MessageCodes.access_token_not_found,
+        )
+    token = JWTHandler.decode(access_token)
+    user_id = token.get("user_id")
+    if not user_id:
+        raise exc.UnauthorizedException(
+            detail="Invalid access token", msg_code=utils.MessageCodes.invalid_token
+        )
+    user = await crud.user.get(db=db, id_=int(user_id))
+    return user
+
+
 async def get_user_from_access_token(
     request: Request,
     credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
@@ -70,7 +87,7 @@ async def get_current_user(
     """
     Dependency function for get user with access token
     """
-    if not (token or credentials):
+    if not (request.cookies.get("Access-Token") or credentials):
         raise exc.NotFoundException(
             detail="Token or username and password not found",
             msg_code=utils.MessageCodes.not_found,
@@ -80,6 +97,10 @@ async def get_current_user(
         user = await crud.user.authenticate(
             db=db, email=credentials.username, password=credentials.password
         )
+
+    elif request.cookies.get("Access-Token"):
+        user = await get_user_from_cookie(request=request, db=db)
+
     elif token:
         user = await get_user_from_access_token(
             db=db, credentials=token, request=request

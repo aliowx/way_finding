@@ -9,6 +9,7 @@ from app import exceptions as exc
 from app import schemas, utils
 from app.api import deps
 from app.api.api_v1 import services
+from app.core.security import JWTHandler
 from app.utils import APIResponse, APIResponseType
 
 router = APIRouter()
@@ -41,6 +42,7 @@ async def login(
         secure=True,
         httponly=True,
         samesite="strict",
+        expires=JWTHandler.token_expiration(tokens.refresh_token),
     )
     response.set_cookie(
         key="Access-Token",
@@ -48,6 +50,7 @@ async def login(
         secure=True,
         httponly=True,
         samesite="strict",
+        expires=JWTHandler.token_expiration(tokens.access_token),
     )
     response.headers["X-CSRF-TOKEN"] = tokens.csrf_token
 
@@ -92,6 +95,7 @@ async def refresh_token(
         secure=True,
         httponly=True,
         samesite="strict",
+        expires=JWTHandler.token_expiration(tokens.refresh_token),
     )
     response.set_cookie(
         key="Access-Token",
@@ -99,6 +103,7 @@ async def refresh_token(
         secure=True,
         httponly=True,
         samesite="strict",
+        expires=JWTHandler.token_expiration(tokens.access_token),
     )
     response.headers["X-CSRF-TOKEN"] = tokens.csrf_token
 
@@ -151,16 +156,14 @@ async def logout(
     await services.logout(
         refresh_token=request.cookies.get("Refresh-Token", ""), cache=cache
     )
-    response.set_cookie(
+    response.delete_cookie(
         key="Refresh-Token",
-        value="",
         secure=True,
         httponly=True,
         samesite="strict",
     )
-    response.set_cookie(
+    response.delete_cookie(
         key="Access-Token",
-        value="",
         secure=True,
         httponly=True,
         samesite="strict",
