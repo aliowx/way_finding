@@ -64,12 +64,12 @@ class LogRoute(APIRoute):
                 response = await exceptions.handle_exception(request, e)
                 return response
 
-            if not response.background:
-                tasks = BackgroundTasks()
-                tasks.add_task(save_request_log_async, request, response)
-                response.background = tasks
-            else:
-                response.background.add_task(save_request_log_async, request, response)
+            # if not response.background:
+            #     tasks = BackgroundTasks()
+            #     tasks.add_task(save_request_log_async, request, response)
+            #     response.background = tasks
+            # else:
+            #     response.background.add_task(save_request_log_async, request, response)
             return response
 
         return custom_route_handler
