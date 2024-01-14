@@ -1,7 +1,6 @@
 import logging
 import traceback
 from typing import Any
-from functools import partial
 
 from fastapi import HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
@@ -53,26 +52,22 @@ def create_system_exception_handler(
     return exception_handler
 
 
-async def exception_handler(request: Request, exc: Any, status_code: int | None = None):
-    exception_type, traceback_str, traceback_full = get_traceback_info(exc)
-    logger.error(f"Exception of type {exception_type}:\n{traceback_str}")
-
-    if status_code is None:
-        status_code = exc.status_code
-
-    response_data = {
-        "data": str(exc.detail),
-        "msg_code": exc.msg_code,
-        "status_code": status_code,
-    }
-    if settings.DEBUG:
-        raise
-    response = utils.APIErrorResponse(**response_data)
-    return response
-
-
 def create_exception_handler(status_code):
-    return partial(exception_handler, status_code=status_code)
+    async def exception_handler(request: Request, exc: Any):
+        exception_type, traceback_str, traceback_full = get_traceback_info(exc)
+        logger.error(f"Exception of type {exception_type}:\n{traceback_str}")
+
+        response_data = {
+            "data": str(exc.detail),
+            "msg_code": exc.msg_code,
+            "status_code": status_code,
+        }
+        if settings.DEBUG:
+            raise
+        response = utils.APIErrorResponse(**response_data)
+        return response
+
+    return exception_handler
 
 
 async def http_exception_handler(request: Request, exc: Any):
