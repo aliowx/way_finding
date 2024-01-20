@@ -97,44 +97,32 @@ async def internal_exceptions_handler(request: Request, exc: Any):
 
 # Define custom exception classes
 class ValidationException(CustomHTTPException):
-    def __init__(
-        self, detail: str | None = None, msg_code: utils.MessageCodes = None
-    ):
+    def __init__(self, detail: str | None = None, msg_code: utils.MessageCodes = None):
         super().__init__(msg_code=msg_code, detail=detail)
 
 
 class NotFoundException(CustomHTTPException):
-    def __init__(
-        self, detail: str | None = None, msg_code: utils.MessageCodes = None
-    ):
+    def __init__(self, detail: str | None = None, msg_code: utils.MessageCodes = None):
         super().__init__(msg_code=msg_code, detail=detail)
 
 
 class AlreadyExistException(CustomHTTPException):
-    def __init__(
-        self, detail: str | None = None, msg_code: utils.MessageCodes = None
-    ):
+    def __init__(self, detail: str | None = None, msg_code: utils.MessageCodes = None):
         super().__init__(msg_code=msg_code, detail=detail)
 
 
 class InternalErrorException(CustomHTTPException):
-    def __init__(
-        self, detail: str | None = None, msg_code: utils.MessageCodes = None
-    ):
+    def __init__(self, detail: str | None = None, msg_code: utils.MessageCodes = None):
         super().__init__(msg_code=msg_code, detail=detail)
 
 
 class UnauthorizedException(CustomHTTPException):
-    def __init__(
-        self, detail: str | None = None, msg_code: utils.MessageCodes = None
-    ):
+    def __init__(self, detail: str | None = None, msg_code: utils.MessageCodes = None):
         super().__init__(msg_code=msg_code, detail=detail)
 
 
 class ForbiddenException(CustomHTTPException):
-    def __init__(
-        self, detail: str | None = None, msg_code: utils.MessageCodes = None
-    ):
+    def __init__(self, detail: str | None = None, msg_code: utils.MessageCodes = None):
         super().__init__(msg_code=msg_code, detail=detail)
 
 
@@ -158,6 +146,7 @@ exception_handlers = {
     ),
 }
 
+
 def handle_exception(request: Request, exc: Any):
     exc_type = type(exc)
     if exc_type is Exception:
@@ -171,20 +160,18 @@ def handle_exception(request: Request, exc: Any):
     if exc_type is AlreadyExistException:
         return create_exception_handler(status.HTTP_409_CONFLICT)
     if exc_type is InternalErrorException:
-        return create_exception_handler(
-        status.HTTP_500_INTERNAL_SERVER_ERROR
-    )
+        return create_exception_handler(status.HTTP_500_INTERNAL_SERVER_ERROR)
     if exc_type is UnauthorizedException:
         return create_exception_handler(status.HTTP_401_UNAUTHORIZED)
     if exc_type is ForbiddenException:
         return create_exception_handler(status.HTTP_403_FORBIDDEN)
     if exc_type is RequestValidationError:
         return create_system_exception_handler(
-        status.HTTP_400_BAD_REQUEST, msg_code=utils.MessageCodes.bad_request
-    )
+            status.HTTP_400_BAD_REQUEST, msg_code=utils.MessageCodes.bad_request
+        )
     if exc_type is ResponseValidationError:
         return create_system_exception_handler(
-        status.HTTP_400_BAD_REQUEST, msg_code=utils.MessageCodes.internal_error
-    )
-        
+            status.HTTP_400_BAD_REQUEST, msg_code=utils.MessageCodes.internal_error
+        )
+
     return internal_exceptions_handler(request, exc)
