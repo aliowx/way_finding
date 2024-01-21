@@ -147,31 +147,7 @@ exception_handlers = {
 }
 
 
-def handle_exception(request: Request, exc: Any):
+async def handle_exception(request: Request, exc: Any):
     exc_type = type(exc)
-    if exc_type is Exception:
-        return internal_exceptions_handler
-    if exc_type is HTTPException:
-        return http_exception_handler
-    if exc_type is ValidationException:
-        return create_exception_handler(status.HTTP_400_BAD_REQUEST)
-    if exc_type is NotFoundException:
-        return create_exception_handler(status.HTTP_404_NOT_FOUND)
-    if exc_type is AlreadyExistException:
-        return create_exception_handler(status.HTTP_409_CONFLICT)
-    if exc_type is InternalErrorException:
-        return create_exception_handler(status.HTTP_500_INTERNAL_SERVER_ERROR)
-    if exc_type is UnauthorizedException:
-        return create_exception_handler(status.HTTP_401_UNAUTHORIZED)
-    if exc_type is ForbiddenException:
-        return create_exception_handler(status.HTTP_403_FORBIDDEN)
-    if exc_type is RequestValidationError:
-        return create_system_exception_handler(
-            status.HTTP_400_BAD_REQUEST, msg_code=utils.MessageCodes.bad_request
-        )
-    if exc_type is ResponseValidationError:
-        return create_system_exception_handler(
-            status.HTTP_400_BAD_REQUEST, msg_code=utils.MessageCodes.internal_error
-        )
-
-    return internal_exceptions_handler(request, exc)
+    handler = exception_handlers.get(exc_type, internal_exceptions_handler)
+    return await handler(request, exc)
