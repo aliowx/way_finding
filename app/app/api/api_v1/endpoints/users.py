@@ -4,11 +4,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import crud, models, schemas
 from app.api import deps
 from app.api.api_v1 import services
+from app.log import log
 from app.utils import APIResponse, APIResponseType
 from cache import cache
 from cache.util import ONE_DAY_IN_SECONDS
 
-router = APIRouter()
+router = APIRouter(route_class=log.LogRoute)
 namespace = "user"
 
 
