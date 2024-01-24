@@ -142,3 +142,5 @@ app/.idea
 # ruff
 .ruff_cache
 
+# vscode 
+.vscode
