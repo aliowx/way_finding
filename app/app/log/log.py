@@ -62,7 +62,6 @@ class LogRoute(APIRoute):
                 response: Response = await original_route_handler(request)
             except Exception as e:
                 response = await exceptions.handle_exception(request, e)
-                return response
 
             if not response.background:
                 tasks = BackgroundTasks()

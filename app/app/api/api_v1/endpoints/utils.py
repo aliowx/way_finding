@@ -6,9 +6,10 @@ from fastapi.responses import HTMLResponse
 from app import models, schemas
 from app.api import deps
 from app.core.celery_app import celery_app
+from app.log import log
 from cache import Cache
 
-router = APIRouter()
+router = APIRouter(route_class=log.LogRoute)
 
 
 @router.post("/test-celery/", response_model=schemas.Msg, status_code=201)
