@@ -27,7 +27,7 @@ async def save_request_log_async(
 
     response_data = ""
     if response:
-        if "json" not in response.headers.get("content-type"):
+        if "json" not in response.headers.get("content-type", ""):
             response_data = json.dumps(dict(response.headers))
         else:
             response_data = str(response.body)
