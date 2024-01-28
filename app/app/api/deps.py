@@ -1,7 +1,6 @@
 import logging
 from typing import AsyncGenerator
 
-import redis.asyncio as redis
 from fastapi import Depends, Request
 from fastapi.security import (
     HTTPAuthorizationCredentials,
@@ -173,11 +172,9 @@ async def get_redis() -> client.Redis:
     """
     Dependency function that get redis client
     """
-    redis_url = str(settings.REDIS_URI)
-    redis_client = await redis.from_url(redis_url, decode_responses=True)
     try:
-        if await redis_client.ping():
-            return redis_client
+        if await utils.redis_client.ping():
+            return utils.redis_client
     except Exception as e:
         logger.error(logger.error(f"Redis connection failed\n{e}"))
         raise exc.InternalErrorException(

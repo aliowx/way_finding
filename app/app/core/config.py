@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str
 
-    SQLALCHEMY_DATABASE_ASYNC_URI: AsyncPostgresDsn | None = None
+    POSTGRES_ASYNC_URI: AsyncPostgresDsn | None = None
 
     RMQ_URI: AmqpDsn | None = None
 
@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     def allow_origins(self) -> list[str]:
         return [str(origin).strip("/") for origin in self.BACKEND_CORS_ORIGINS]
 
-    @field_validator("SQLALCHEMY_DATABASE_ASYNC_URI", mode="before")
+    @field_validator("POSTGRES_ASYNC_URI", mode="before")
     @classmethod
     def assemble_async_db_connection(cls, v: str | None) -> Any:
         if isinstance(v, str):
