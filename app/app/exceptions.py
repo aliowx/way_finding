@@ -19,8 +19,9 @@ class CustomHTTPException(HTTPException):
         status_code: int = status.HTTP_400_BAD_REQUEST,
         msg_code: utils.MessageCodes = utils.MessageCodes.internal_error,
         detail: str | None = None,
+        headers: dict | None = None,
     ):
-        super().__init__(status_code=status_code, detail=detail)
+        super().__init__(status_code=status_code, detail=detail, headers=headers)
         self.msg_code = msg_code
 
 
@@ -91,33 +92,33 @@ async def internal_exceptions_handler(request: Request, exc: Any):
 
 # Define custom exception classes
 class ValidationException(CustomHTTPException):
-    def __init__(self, detail: str | None = None, msg_code: utils.MessageCodes = None):
-        super().__init__(msg_code=msg_code, detail=detail)
+    def __init__(self, detail: str | None = None, msg_code: utils.MessageCodes = None, headers: dict | None = None,):
+        super().__init__(msg_code=msg_code, detail=detail, headers=headers)
 
 
 class NotFoundException(CustomHTTPException):
-    def __init__(self, detail: str | None = None, msg_code: utils.MessageCodes = None):
-        super().__init__(msg_code=msg_code, detail=detail)
+    def __init__(self, detail: str | None = None, msg_code: utils.MessageCodes = None, headers: dict | None = None,):
+        super().__init__(msg_code=msg_code, detail=detail, headers=headers)
 
 
 class AlreadyExistException(CustomHTTPException):
-    def __init__(self, detail: str | None = None, msg_code: utils.MessageCodes = None):
-        super().__init__(msg_code=msg_code, detail=detail)
+    def __init__(self, detail: str | None = None, msg_code: utils.MessageCodes = None, headers: dict | None = None,):
+        super().__init__(msg_code=msg_code, detail=detail, headers=headers)
 
 
 class InternalErrorException(CustomHTTPException):
-    def __init__(self, detail: str | None = None, msg_code: utils.MessageCodes = None):
-        super().__init__(msg_code=msg_code, detail=detail)
+    def __init__(self, detail: str | None = None, msg_code: utils.MessageCodes = None, headers: dict | None = None,):
+        super().__init__(msg_code=msg_code, detail=detail, headers=headers)
 
 
 class UnauthorizedException(CustomHTTPException):
-    def __init__(self, detail: str | None = None, msg_code: utils.MessageCodes = None):
-        super().__init__(msg_code=msg_code, detail=detail)
+    def __init__(self, detail: str | None = None, msg_code: utils.MessageCodes = None, headers: dict | None = None,):
+        super().__init__(msg_code=msg_code, detail=detail, headers=headers)
 
 
 class ForbiddenException(CustomHTTPException):
-    def __init__(self, detail: str | None = None, msg_code: utils.MessageCodes = None):
-        super().__init__(msg_code=msg_code, detail=detail)
+    def __init__(self, detail: str | None = None, msg_code: utils.MessageCodes = None, headers: dict | None = None,):
+        super().__init__(msg_code=msg_code, detail=detail, headers=headers)
 
 
 # Create a dictionary of exception handlers

@@ -15,7 +15,7 @@ router = APIRouter(route_class=log.LogRoute)
 @router.post("/test-celery/", response_model=schemas.Msg, status_code=201)
 def test_celery(
     msg: schemas.Msg,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(deps.get_current_superuser_from_cookie_or_basic),
 ) -> Any:
     """
     Test Celery worker.
@@ -28,7 +28,7 @@ def test_celery(
 
 @router.get("/test-redis/", status_code=201)
 async def test_redis(
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(deps.get_current_superuser_from_cookie_or_basic),
 ) -> Any:
     """
     Test redis connection.

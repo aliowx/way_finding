@@ -69,15 +69,3 @@ async def logout(refresh_token: str, access_token: str, cache: client.Redis):
             )
     except exc.UnauthorizedException:
         pass
-
-
-async def me(db: AsyncSession, user_in: schemas.LoginUser) -> schemas.User:
-    user = await crud.user.authenticate(
-        db=db, email=user_in.email, password=user_in.password
-    )
-    if not user:
-        raise exc.NotFoundException(
-            detail="Incorrect email or password",
-            msg_code=utils.MessageCodes.incorrect_email_or_password,
-        )
-    return user

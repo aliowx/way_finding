@@ -42,6 +42,9 @@ class Settings(BaseSettings):
 
     SUB_PATH: str = ""
 
+    HEALTH_USERNAME: str
+    HEALTH_PASSWORD: str
+
     @classmethod
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     def assemble_cors_origins(cls, v: str | list[str]) -> list[str] | str:
