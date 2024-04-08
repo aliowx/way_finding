@@ -214,7 +214,7 @@ else:
 ```python
 @cache(namespace="image", expire=ONE_HOUR_IN_SECONDS)
 async def read_image_base64(db: AsyncSession, image_id: int):
-    image = await crud.image.get(db=db, id=image_id)
+    image = await crud.image.get(db=db, id_=image_id)
     if not image:
         raise HTTPException(status_code=404, detail="Image not found")
 

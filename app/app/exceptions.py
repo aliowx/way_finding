@@ -44,8 +44,7 @@ def create_system_exception_handler(
             "msg_code": msg_code,
             "status_code": status_code,
         }
-        if settings.DEBUG:
-            raise
+
         response = utils.APIErrorResponse(**response_data)
         return response
 
@@ -54,16 +53,12 @@ def create_system_exception_handler(
 
 def create_exception_handler(status_code):
     async def exception_handler(request: Request, exc: Any):
-        exception_type, traceback_str, traceback_full = get_traceback_info(exc)
-        logger.error(f"Exception of type {exception_type}:\n{traceback_str}")
-
         response_data = {
             "data": str(exc.detail),
             "msg_code": exc.msg_code,
             "status_code": status_code,
         }
-        if settings.DEBUG:
-            raise
+
         response = utils.APIErrorResponse(**response_data)
         return response
 
@@ -71,7 +66,6 @@ def create_exception_handler(status_code):
 
 
 async def http_exception_handler(request: Request, exc: Any):
-    _, _, traceback_full = get_traceback_info(exc)
     response = utils.APIErrorResponse(
         data=exc.detail,
         msg_code=utils.MessageCodes.internal_error,
@@ -82,7 +76,7 @@ async def http_exception_handler(request: Request, exc: Any):
 
 async def internal_exceptions_handler(request: Request, exc: Any):
     exception_type, traceback_str, traceback_full = get_traceback_info(exc)
-    logger.error(f"Unhandled {exception_type} Exception Happened:\n{traceback_str}")
+    logger.error(f"Unhandled {exception_type} Exception Happened:\n{traceback_str} \n{traceback_full}")
 
     error_msg = ""
     if settings.DEBUG:

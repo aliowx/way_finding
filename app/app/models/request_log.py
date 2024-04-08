@@ -7,9 +7,9 @@ from app.db.base_class import Base
 class RequestLog(Base):
     id = mapped_column(Integer, primary_key=True)
 
-    authorization = mapped_column(String(256))
+    user_id = mapped_column(String(50))
     method = mapped_column(String(10))
-    service_name = mapped_column(String(50))
+    service_name = mapped_column(Text)
     ip = mapped_column(String(50))
     request = mapped_column(Text)
     response = mapped_column(Text)

@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 async def save_request_log_async(
     request: Request, response: Response = None, trace_back: str = ""
 ) -> None:
-    authorization = request.headers.get("authorization")
+
     client_host = request.client.host
     service_name = request.url.path
     method = request.method
@@ -38,7 +38,6 @@ async def save_request_log_async(
         pass
 
     request_log_data = {
-        "authorization": authorization,
         "service_name": service_name,
         "method": method,
         "ip": client_host,
@@ -46,6 +45,11 @@ async def save_request_log_async(
         "response": response_data,
         "trace": trace_back,
     }
+
+    try:
+        request_log_data.update({"user_id": request.state.user_id})
+    except:
+        pass
 
     request_log_in = schemas.RequestLogCreate(**request_log_data)
     async with async_session() as db:

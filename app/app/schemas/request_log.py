@@ -15,7 +15,7 @@ class RequestLogCreate(BaseModel):
     response: str = None
     service_name: str = None
     method: str = None
-    authorization: str | None = None
+    user_id: str | None = None
     ip: str | None = None
     trace: str | None = None
 

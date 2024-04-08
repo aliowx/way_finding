@@ -40,7 +40,7 @@ async def update_user(
                 msg_code=MessageCodes.permission_error,
             )
 
-    user = await crud.user.get(db, id=user_id)
+    user = await crud.user.get(db, id_=user_id)
     if not user:
         raise exc.NotFoundException(
             detail="The user with this username does not exist",

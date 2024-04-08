@@ -10,8 +10,8 @@ from pydantic import (
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-REFRESH_TOKEN_KEY = "refresh_token:{token}"
-SESSION_ID_KEY = "session_id:{token}"
+REFRESH_TOKEN_BLOCKLIST_KEY = "refresh_token_blocklist:{token}"
+ACCESS_TOKEN_BLOCKLIST_KEY = "access_token_blocklist:{token}"
 
 
 class AsyncPostgresDsn(PostgresDsn):
@@ -29,7 +29,6 @@ class Settings(BaseSettings):
     # 60 minutes * 24 hours * 1 day = 1 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     REFRESH_TOKEN_EXPIRE_MINUTES: int
-    SESSION_EXPIRE_MINUTES: int
     JWT_ALGORITHM: str = "HS256"
 
     FIRST_SUPERUSER: EmailStr
@@ -40,6 +39,8 @@ class Settings(BaseSettings):
     RMQ_URI: AmqpDsn | None = None
 
     REDIS_URI: RedisDsn | None = None
+
+    SUB_PATH: str = ""
 
     @classmethod
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
