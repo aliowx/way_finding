@@ -1,3 +1,3 @@
-from .session import SessionMiddleware
+from .time_logger import TimeLoggerMiddleware
 
-__all__ = ["SessionMiddleware"]
+__all__ = ["TimeLoggerMiddleware"]

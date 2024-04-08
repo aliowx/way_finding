@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import logging, sys, os
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware import Middleware
@@ -9,14 +10,31 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.api.api_v1.api import api_router
 from app.core.config import settings
-from app.core.middleware import SessionMiddleware
+from app.core.middleware import TimeLoggerMiddleware
 from app.exceptions import exception_handlers
 from app.models import User
 from cache import Cache
 
 
+def init_logger():
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    handler = logging.StreamHandler()
+    handler.setFormatter(
+        logging.Formatter(
+            "%(levelname)s:%(asctime)s %(name)s:%(funcName)s:%(lineno)s %(message)s"
+        )
+    )
+    logger.addHandler(handler)
+
+
+init_logger()
+
+
 def make_middleware() -> list[Middleware]:
-    middleware = [Middleware(SessionMiddleware)]
+    middleware = []
+    if settings.DEBUG:
+        middleware.append(Middleware(TimeLoggerMiddleware))
     return middleware
 
 
@@ -40,6 +58,11 @@ app = FastAPI(
     exception_handlers=exception_handlers,
     middleware=make_middleware(),
 )
+
+
+if settings.SUB_PATH:
+    app.mount(f"{settings.SUB_PATH}", app)
+
 
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:

@@ -6,10 +6,10 @@ from app.api import deps
 from app.api.api_v1 import services
 from app.log import log
 from app.utils import APIResponse, APIResponseType
-from cache import cache
+from cache import cache, invalidate
 from cache.util import ONE_DAY_IN_SECONDS
 
-router = APIRouter(route_class=log.LogRoute)
+router = APIRouter()
 namespace = "user"
 
 
@@ -45,6 +45,7 @@ async def read_user_by_id(
 
 
 @router.put("/{user_id}")
+@invalidate(namespace=namespace)
 async def update_user(
     user_id: int,
     user_in: schemas.UserUpdate,

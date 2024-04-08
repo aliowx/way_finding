@@ -16,9 +16,8 @@ ALLOWED_HTTP_TYPES = ["GET"]
 LOG_TIMESTAMP = "%m/%d/%Y %I:%M:%S %p"
 HTTP_TIME = "%a, %d %b %Y %H:%M:%S GMT"
 
-logging.basicConfig()
+
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 class MetaSingleton(type):
@@ -147,7 +146,7 @@ class Cache(metaclass=MetaSingleton):
             return False
         cached = await self.redis.set(name=key, value=response_data, ex=expire)
         if cached:
-            self.log(RedisEvent.KEY_ADDED_TO_CACHE, key=key)
+            self.log(RedisEvent.KEY_ADDED_TO_CACHE)
         else:  # pragma: no cover
             self.log(RedisEvent.FAILED_TO_CACHE_KEY, key=key, value=value)
         return cached
@@ -182,7 +181,7 @@ class Cache(metaclass=MetaSingleton):
         value: Optional[str] = None,
     ):
         """Log `RedisEvent` using the configured `Logger` object"""
-        message = f" {self.get_log_time()} | {event.name}"
+        message = event.name
         if msg:
             message += f": {msg}"
         if key:
@@ -200,8 +199,3 @@ class Cache(metaclass=MetaSingleton):
         if not isinstance(cached_data, str):
             cached_data = serialize_json(cached_data)
         return f"W/{hash(cached_data)}"
-
-    @staticmethod
-    def get_log_time():
-        """Get a timestamp to include with a log message."""
-        return datetime.now().strftime(LOG_TIMESTAMP)

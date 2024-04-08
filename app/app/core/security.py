@@ -47,20 +47,14 @@ class JWTHandler:
             result: dict = jwt.decode(
                 token, JWTHandler.secret_key, algorithms=[JWTHandler.algorithm]
             )
-            exp = result.get("exp")
-            if exp and datetime.utcfromtimestamp(exp) < datetime.utcnow():
-                raise exc.InternalErrorException(
-                    detail="Token expired",
-                    msg_code=MessageCodes.expired_token,
-                )
             return result
         except jwt.ExpiredSignatureError:
-            raise exc.InternalErrorException(
+            raise exc.UnauthorizedException(
                 detail="Token expired",
                 msg_code=MessageCodes.expired_token,
             )
         except jwt.InvalidTokenError:
-            raise exc.InternalErrorException(
+            raise exc.UnauthorizedException(
                 detail="Invalid token",
                 msg_code=MessageCodes.invalid_token,
             )
@@ -75,7 +69,7 @@ class JWTHandler:
                 options={"verify_exp": False},
             )
         except jwt.InvalidTokenError:
-            raise exc.InternalErrorException(
+            raise exc.UnauthorizedException(
                 detail="Invalid token",
                 msg_code=MessageCodes.invalid_token,
             )
@@ -89,17 +83,20 @@ class JWTHandler:
                 algorithms=[JWTHandler.algorithm],
                 options={"verify_exp": True},
             )
-            exp = decoded_token.get("exp")
-            if exp:
-                return datetime.fromtimestamp(exp).replace(tzinfo=timezone.utc)
-            return None
+            exp = int(decoded_token.get("exp"))
+            if not exp:
+                raise exc.UnauthorizedException(
+                    detail="Invalid token exp",
+                    msg_code=MessageCodes.invalid_token,
+                )
+            return exp
         except jwt.ExpiredSignatureError:
-            raise exc.InternalErrorException(
+            raise exc.UnauthorizedException(
                 detail="Token expired",
                 msg_code=MessageCodes.expired_token,
             )
         except jwt.InvalidTokenError:
-            raise exc.InternalErrorException(
+            raise exc.UnauthorizedException(
                 detail="Invalid token",
                 msg_code=MessageCodes.invalid_token,
             )

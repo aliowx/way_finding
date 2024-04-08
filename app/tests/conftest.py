@@ -1,3 +1,4 @@
+import os
 import asyncio
 from typing import Generator, AsyncGenerator
 
@@ -6,15 +7,23 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from httpx import AsyncClient
 from app.api.deps import get_db_async
-from app.main import app
+from app.main import app, settings
 from app.db import Base
+from app.crud import crud_user
+from app.core.security import JWTHandler
+from app.db.init_db import init_db
 
+DATABASE_FILE_NAME = "test.db"
 
-ASYNC_SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+try:
+    # remove tmp sqlite database if exist
+    os.remove(DATABASE_FILE_NAME)
+except:
+    pass
 
-engine = create_async_engine(
-    ASYNC_SQLALCHEMY_DATABASE_URL, pool_pre_ping=True
-)
+ASYNC_SQLALCHEMY_DATABASE_URL = f"sqlite+aiosqlite:///./{DATABASE_FILE_NAME}"
+
+engine = create_async_engine(ASYNC_SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
 
 async_session_local = async_sessionmaker(
     bind=engine,
@@ -29,6 +38,7 @@ async def override_get_db_async() -> AsyncGenerator:
     async with async_session_local() as db:
         yield db
         await db.commit()
+
 
 app.dependency_overrides[get_db_async] = override_get_db_async
 
@@ -48,11 +58,8 @@ async def db() -> AsyncSession:
     async with async_session() as session:
         async with async_engine.begin() as connection:
             await connection.run_sync(Base.metadata.create_all)
+        await init_db(db=session)
         yield session
-
-    # async with async_engine.begin() as connection:
-    #     await connection.run_sync(Base.metadata.drop_all)
-    #     pass
 
     await async_engine.dispose()
 
@@ -61,3 +68,17 @@ async def db() -> AsyncSession:
 async def client() -> AsyncClient:
     async with AsyncClient(app=app, base_url="http://test") as client:
         yield client
+
+
+@pytest_asyncio.fixture(scope="session")
+async def superuser_tokens(db: AsyncSession) -> dict[str, str]:  # noqa: indirect usage
+    user = await crud_user.user.get_by_email(db=db, email=settings.FIRST_SUPERUSER)
+    assert user != None
+
+    refresh_token = JWTHandler.encode_refresh_token(
+        payload={"sub": "refresh", "id": str(user.id)}
+    )
+    access_token = JWTHandler.encode(payload={"sub": "access", "id": str(user.id)})
+
+    tokens = {"Refresh-Token": refresh_token, "Access-Token": access_token}
+    return tokens
