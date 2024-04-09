@@ -16,7 +16,6 @@ SQLAlchemy = {extras = ["mypy"], version = "^2.0.22"}
 celery = "^5.2.7"
 fastapi = "^0.109.0"
 python-jose = "^3.3.0"
-passlib = "^1.7.4"
 persiantools = "^3.0.1"
 python-multipart = "^0.0.6"
 tenacity = "^8.1.0"
