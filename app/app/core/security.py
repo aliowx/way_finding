@@ -1,12 +1,16 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import Any
 
 import jwt
 from passlib.context import CryptContext
 
+from fastapi.security import HTTPBasic
+
 from app import exceptions as exc
 from app.core.config import settings
 from app.utils import MessageCodes
+
+basic_security = HTTPBasic(auto_error=False)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

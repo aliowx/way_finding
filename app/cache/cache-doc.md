@@ -113,7 +113,7 @@ This decorator takes two main parameters:
 After this decorator is set, the data will be stored in the cache for each request from the user, which will speed up the response.
 For example, you can see the endpoint of users below:
 
-__Tip__: Cache decorator must be under our router.
+__Tip__: Cache decorator must be under the router.
 
 ```python
 # api/api_v1/endpoints/users.py
@@ -124,7 +124,7 @@ async def read_users(
     db: AsyncSession = Depends(deps.get_db_async),
     skip: int = 0,
     limit: int = 100,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(deps.get_current_superuser_from_cookie_or_basic),
 ) -> Any:
     """
     Retrieve users.
@@ -146,7 +146,7 @@ async def read_users(
     db: AsyncSession = Depends(deps.get_db_async),
     skip: int = 0,
     limit: int = 100,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(deps.get_current_superuser_from_cookie_or_basic),
 ) -> Any:
     """
     Retrieve users.
@@ -180,7 +180,7 @@ async def create_user(
     *,
     db: AsyncSession = Depends(deps.get_db_async),
     user_in: schemas.UserCreate,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(deps.get_current_superuser_from_cookie_or_basic),
 ) -> Any:
     """
     Create new user.

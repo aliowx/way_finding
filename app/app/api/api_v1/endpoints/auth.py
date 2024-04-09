@@ -22,7 +22,7 @@ async def login(
     user_in: schemas.LoginUser,
     db: AsyncSession = Depends(deps.get_db_async),
 ) -> APIResponseType[schemas.Msg]:
-    """Login"""
+    """Save User Refresh and Access Token to cookie"""
 
     tokens = await services.login(db=db, user_in=user_in)
 
@@ -51,7 +51,7 @@ async def login(
 async def register(
     user_in: schemas.UserCreate,
     db: AsyncSession = Depends(deps.get_db_async),
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(deps.get_current_superuser_from_cookie_or_basic),
 ) -> APIResponseType[schemas.User]:
     """Register new user"""
     response = await services.register(db=db, user_in=user_in)
@@ -60,7 +60,7 @@ async def register(
 
 @router.get("/me")
 async def me(
-    current_user: schemas.User = Depends(deps.get_current_active_user),
+    current_user: schemas.User = Depends(deps.get_current_user_from_cookie_or_basic),
 ) -> APIResponseType[schemas.User]:
     """Retrieve current user"""
     return APIResponse(current_user)

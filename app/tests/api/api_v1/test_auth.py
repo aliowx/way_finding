@@ -1,7 +1,5 @@
-from typing import Any, Dict
-
 import pytest
-from httpx import AsyncClient
+from httpx import AsyncClient, BasicAuth
 
 from app.core.config import settings
 
@@ -72,5 +70,25 @@ class TestAuth:
         assert None != client.cookies.get("Access-Token")
 
         # call service without tokens
+        response = await client.get(f"{settings.API_V1_STR}/auth/me")
+        assert response.status_code == 401
+
+    async def test_basic_auth(self, client: AsyncClient):
+
+        # call service with valid credential
+        response = await client.get(
+            f"{settings.API_V1_STR}/auth/me",
+            auth=BasicAuth(settings.FIRST_SUPERUSER, settings.FIRST_SUPERUSER_PASSWORD),
+        )
+        assert response.status_code == 200
+        assert settings.FIRST_SUPERUSER == response.json()["content"]["email"]
+
+        # call service invalid credential
+        response = await client.get(
+            f"{settings.API_V1_STR}/auth/me", auth=BasicAuth("random", "random")
+        )
+        assert response.status_code == 401
+
+        # call service without credential
         response = await client.get(f"{settings.API_V1_STR}/auth/me")
         assert response.status_code == 401

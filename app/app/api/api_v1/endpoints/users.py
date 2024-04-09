@@ -19,7 +19,7 @@ async def read_users(
     db: AsyncSession = Depends(deps.get_db_async),
     skip: int = 0,
     limit: int = 100,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(deps.get_current_superuser_from_cookie_or_basic),
 ) -> APIResponseType[list[schemas.User]]:
     """
     Retrieve users.
@@ -32,7 +32,7 @@ async def read_users(
 @cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
 async def read_user_by_id(
     user_id: int,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(deps.get_current_superuser_from_cookie_or_basic),
     db: AsyncSession = Depends(deps.get_db_async),
 ) -> APIResponseType[schemas.User]:
     """
@@ -50,7 +50,7 @@ async def update_user(
     user_id: int,
     user_in: schemas.UserUpdate,
     db: AsyncSession = Depends(deps.get_db_async),
-    current_user: models.User = Depends(deps.get_current_user),
+    current_user: models.User = Depends(deps.get_current_user_from_cookie_or_basic),
 ) -> APIResponseType[schemas.User]:
     """
     Update a user.
