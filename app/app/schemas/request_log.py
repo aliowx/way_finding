@@ -18,6 +18,8 @@ class RequestLogCreate(BaseModel):
     user_id: str | None = None
     ip: str | None = None
     trace: str | None = None
+    processing_time: float | None = None
+    tracker_id: str | None = None
 
 
 class RequestLogUpdate(BaseModel):
