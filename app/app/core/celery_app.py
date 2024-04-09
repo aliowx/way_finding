@@ -2,7 +2,7 @@ from celery import Celery
 
 from app.core.config import settings
 
-BROKER_URL = str(settings.RMQ_URI)
+BROKER_URL = str(settings.REDIS_URI)
 
 
 celery_app = Celery(

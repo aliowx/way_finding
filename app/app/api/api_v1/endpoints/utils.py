@@ -42,7 +42,7 @@ def test_celery(
     """
     Test Celery worker.
     """
-    task = celery_app.send_task("app.worker.test_celery", args=[msg.msg])
+    task = celery_app.send_task("app.celery.worker.test_celery", args=[msg.msg])
     return {
         "msg": f"{msg.msg} - {task.id}",
     }

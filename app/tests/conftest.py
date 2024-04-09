@@ -1,10 +1,12 @@
 import asyncio
+import time
 from typing import Generator, AsyncGenerator
 
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from httpx import AsyncClient
+
 from app.api.deps import get_db_async
 from app.main import app, settings
 from app.db import Base
@@ -12,7 +14,6 @@ from app.crud import crud_user
 from app.core.security import JWTHandler
 from app.db.init_db import init_db
 from app.log import log
-
 
 ASYNC_SQLALCHEMY_DATABASE_URL = f"sqlite+aiosqlite:///./test.db"
 
@@ -37,7 +38,7 @@ app.dependency_overrides[get_db_async] = override_get_db_async
 
 
 @pytest.fixture(autouse=True)
-def async_session_maker(monkeypatch: pytest.MonkeyPatch):
+def patch_async_session_maker(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(log, "async_session", async_session_test)
 
 

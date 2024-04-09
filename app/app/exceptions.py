@@ -37,7 +37,7 @@ def create_system_exception_handler(
     msg_code: str,
 ):
     async def exception_handler(request: Request, exc: Any):
-        exception_type, traceback_str, traceback_full = get_traceback_info(exc)
+        exception_type, traceback_str, _ = get_traceback_info(exc)
         logger.error(f"Exception of type {exception_type}:\n{traceback_str}")
 
         response_data = {

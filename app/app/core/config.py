@@ -1,7 +1,6 @@
 from typing import Any
 
 from pydantic import (
-    AmqpDsn,
     AnyHttpUrl,
     EmailStr,
     PostgresDsn,
@@ -36,8 +35,6 @@ class Settings(BaseSettings):
 
     POSTGRES_ASYNC_URI: AsyncPostgresDsn | None = None
 
-    RMQ_URI: AmqpDsn | None = None
-
     REDIS_URI: RedisDsn | None = None
 
     SUB_PATH: str = ""
@@ -69,12 +66,6 @@ class Settings(BaseSettings):
     def assemble_redis_URI_connection(cls, v: str | None) -> Any:
         if isinstance(v, str):
             return RedisDsn(v)
-
-    @field_validator("RMQ_URI", mode="before")
-    @classmethod
-    def assemble_rmq_URI_connection(cls, v: str | None) -> Any:
-        if isinstance(v, str):
-            return AmqpDsn(v)
 
     model_config = SettingsConfigDict(env_file=".env")
 

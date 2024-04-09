@@ -21,6 +21,7 @@ class TestAuth:
             cookies=superuser_tokens,
         )
         assert response.status_code == 200
+        assert response.json()["content"]["email"] == self.email
 
         # duplicate register
         response = await client.post(
@@ -43,9 +44,9 @@ class TestAuth:
         # invalid login
         response = await client.post(
             f"{settings.API_V1_STR}/auth/login",
-            json={"invalied_username": "invalied_password"},
+            json={"email": "invalied_email@in.valid", "password": "invalied_password"},
         )
-        assert response.status_code == 400
+        assert response.status_code == 404
 
     async def test_auth_and_tokens(self, client: AsyncClient):
 

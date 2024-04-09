@@ -36,7 +36,6 @@ def cache(
         @wraps(func)
         async def inner_wrapper(*args, **kwargs):
             """Return cached value if one exists, otherwise evaluate the wrapped function and cache the result."""
-
             func_kwargs = kwargs.copy()
             request = func_kwargs.pop("request", None)
             response = func_kwargs.pop("response", None)
@@ -53,48 +52,11 @@ def cache(
             ttl, in_cache = await redis_cache.check_cache(key)
             if in_cache:
                 return deserialize_json(in_cache)
-                redis_cache.set_response_headers(
-                    response, True, deserialize_json(in_cache), ttl
-                )
-                if redis_cache.requested_resource_not_modified(request, in_cache):
-                    response.status_code = int(HTTPStatus.NOT_MODIFIED)
-                    return (
-                        Response(
-                            content=None,
-                            status_code=response.status_code,
-                            media_type="application/json",
-                            headers=response.headers,
-                        )
-                        if create_response_directly
-                        else response
-                    )
-                return (
-                    Response(
-                        content=in_cache,
-                        media_type="application/json",
-                        headers=response.headers,
-                    )
-                    if create_response_directly
-                    else deserialize_json(in_cache)
-                )
+                
             response_data = await get_api_response_async(func, *args, **kwargs)
             ttl = calculate_ttl(expire)
 
-            cached = await redis_cache.add_to_cache(key, response_data, ttl)
-            return response_data
-            if cached:
-                redis_cache.set_response_headers(
-                    response, cache_hit=False, response_data=response_data, ttl=ttl
-                )
-                return (
-                    Response(
-                        content=serialize_json(response_data),
-                        media_type="application/json",
-                        headers=response.headers,
-                    )
-                    if create_response_directly
-                    else response_data
-                )
+            await redis_cache.add_to_cache(key, response_data, ttl)
             return response_data
 
         return inner_wrapper
