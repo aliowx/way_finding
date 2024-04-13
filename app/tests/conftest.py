@@ -14,6 +14,7 @@ from app.crud import crud_user
 from app.core.security import JWTHandler
 from app.db.init_db import init_db
 from app.log import log
+from app.api.api_v1.endpoints import health
 
 ASYNC_SQLALCHEMY_DATABASE_URL = f"sqlite+aiosqlite:///./test.db"
 
@@ -40,6 +41,7 @@ app.dependency_overrides[get_db_async] = override_get_db_async
 @pytest.fixture(autouse=True)
 def patch_async_session_maker(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(log, "async_session", async_session_test)
+    monkeypatch.setattr(health, "async_session", async_session_test)
 
 
 @pytest.fixture(scope="session")

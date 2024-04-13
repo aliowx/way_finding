@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     HEALTH_USERNAME: str
     HEALTH_PASSWORD: str
 
+    # CI variables
+    COMMIT_ID: str | None = None
+    APP_VERSION: str | None = None
+
     @classmethod
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     def assemble_cors_origins(cls, v: str | list[str]) -> list[str] | str:
