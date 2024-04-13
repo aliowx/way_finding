@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 from typing import Callable
 
 from fastapi import BackgroundTasks, Request
@@ -15,7 +16,6 @@ logger = logging.getLogger(__name__)
 async def save_request_log_async(
     request: Request, response: Response = None, trace_back: str = ""
 ) -> None:
-
     client_host = request.client.host
     service_name = request.url.path
     method = request.method
@@ -44,6 +44,7 @@ async def save_request_log_async(
         "request": json.dumps(request_data),
         "response": response_data,
         "trace": trace_back,
+        "processing_time": round(time.time() - request.state.start_time, 4),
     }
 
     try:
@@ -51,10 +52,20 @@ async def save_request_log_async(
     except:
         pass
 
-    request_log_in = schemas.RequestLogCreate(**request_log_data)
-    async with async_session() as db:
-        await crud.request_log.create(db=db, obj_in=request_log_in)
-        await db.commit()
+    try:
+        request_log_data.update({"tracker_id": str(request.state.tracker_id)})
+    except:
+        pass
+
+    try:
+        request_log_in = schemas.RequestLogCreate(**request_log_data)
+
+        async with async_session() as db:
+            await crud.request_log.create(db=db, obj_in=request_log_in)
+            await db.commit()
+
+    except Exception as e:
+        logger.error(f"save request log err: {type(e)}, {e}")
 
 
 class LogRoute(APIRoute):
@@ -62,6 +73,7 @@ class LogRoute(APIRoute):
         original_route_handler = super().get_route_handler()
 
         async def custom_route_handler(request: Request) -> Response:
+            request.state.start_time = time.time()
             try:
                 response: Response = await original_route_handler(request)
             except Exception as e:

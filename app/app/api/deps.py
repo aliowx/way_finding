@@ -180,7 +180,7 @@ async def get_current_user_from_basic(
             headers={"WWW-Authenticate": "Basic"},
         )
 
-    request.state.user_id = current_user.id
+    request.state.user_id = str(current_user.id)
     return current_user
 
 
@@ -225,7 +225,7 @@ async def get_current_user_from_cookie_or_basic(
             msg_code=utils.MessageCodes.not_authorized,
         )
 
-    request.state.user_id = current_user.id
+    request.state.user_id = str(current_user.id)
     return current_user
 
 

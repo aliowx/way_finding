@@ -1,31 +1,26 @@
-import os
 import asyncio
+import time
 from typing import Generator, AsyncGenerator
 
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from httpx import AsyncClient
+
 from app.api.deps import get_db_async
 from app.main import app, settings
 from app.db import Base
 from app.crud import crud_user
 from app.core.security import JWTHandler
 from app.db.init_db import init_db
+from app.log import log
+from app.api.api_v1.endpoints import health
 
-DATABASE_FILE_NAME = "test.db"
-
-try:
-    # remove tmp sqlite database if exist
-    os.remove(DATABASE_FILE_NAME)
-except:
-    pass
-
-ASYNC_SQLALCHEMY_DATABASE_URL = f"sqlite+aiosqlite:///./{DATABASE_FILE_NAME}"
+ASYNC_SQLALCHEMY_DATABASE_URL = f"sqlite+aiosqlite:///./test.db"
 
 engine = create_async_engine(ASYNC_SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
 
-async_session_local = async_sessionmaker(
+async_session_test = async_sessionmaker(
     bind=engine,
     class_=AsyncSession,
     expire_on_commit=False,
@@ -35,12 +30,18 @@ async_session_local = async_sessionmaker(
 
 
 async def override_get_db_async() -> AsyncGenerator:
-    async with async_session_local() as db:
+    async with async_session_test() as db:
         yield db
         await db.commit()
 
 
 app.dependency_overrides[get_db_async] = override_get_db_async
+
+
+@pytest.fixture(autouse=True)
+def patch_async_session_maker(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(log, "async_session", async_session_test)
+    monkeypatch.setattr(health, "async_session", async_session_test)
 
 
 @pytest.fixture(scope="session")
@@ -53,10 +54,11 @@ def event_loop(request) -> Generator:  # noqa: indirect usage
 @pytest_asyncio.fixture(scope="session")
 async def db() -> AsyncSession:
     async_engine = engine
-    async_session = async_session_local
+    async_session = async_session_test
 
     async with async_session() as session:
         async with async_engine.begin() as connection:
+            await connection.run_sync(Base.metadata.drop_all)
             await connection.run_sync(Base.metadata.create_all)
         await init_db(db=session)
         yield session

@@ -1,4 +1,5 @@
 import uuid
+import datetime
 from typing import Tuple
 
 import jdatetime
@@ -29,3 +30,12 @@ def generate_excel_file(path, data: dict, title: str = "Report") -> Tuple[str, s
     df.to_excel(writer, title, index=False)
     writer.close()
     return file_path, file_name
+
+
+def get_linux_uptime():
+    try:
+        with open("/proc/uptime", "r") as f:
+            uptime = float(f.readline().split()[0])
+            return uptime, str(datetime.timedelta(seconds=round(uptime)))
+    except:
+        return None, None
