@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import crud
 from app import exceptions as exc
 from app import models, schemas, utils
+from app.utils import redis_client
 from app.core.config import (
     settings,
     ACCESS_TOKEN_BLOCKLIST_KEY,
@@ -34,17 +35,15 @@ async def get_redis() -> client.Redis:
     """
     Dependency function that get redis client
     """
-    redis_url = str(settings.REDIS_URI)
-    redis_client = await redis.from_url(redis_url, decode_responses=True)
+
     try:
         if await redis_client.ping():
             return redis_client
+        raise redis.RedisError("ping error")
+
     except Exception as e:
         logger.error(logger.error(f"Redis connection failed\n{e}"))
-        raise exc.InternalErrorException(
-            msg_code=utils.MessageCodes.operation_failed,
-        ) from e
-
+        raise e
 
 async def get_user_id_from_cookie(
     request: Request,

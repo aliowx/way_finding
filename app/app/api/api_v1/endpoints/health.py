@@ -1,8 +1,7 @@
 import time
 from fastapi import APIRouter, Depends
 from app.core.config import settings
-from app.api.deps import health_user
-from cache import Cache
+from app.api.deps import health_user, get_redis
 from app import schemas, crud
 from app.utils import utils
 from app.db.session import async_session
@@ -36,22 +35,10 @@ async def deep_check(_=Depends(health_user)) -> schemas.HealthCheck:
     # Redis and Cache
     start = time.time()
     try:
-        redis_cache = Cache()
-        await redis_cache.init(
-            host_url=str(settings.REDIS_URI),
-            prefix="api-cache",
-            response_header="X-API-Cache",
-        )
-
-        if redis_cache.connected:
-            health.services.redis.ok = True
-            health.services.redis.msg = "Redis was connected"
-            health.services.redis.time = time.time() - start
-        else:
-            health.ok = False
-            health.services.redis.ok = False
-            health.services.redis.msg = "Redis was not connected"
-            health.services.redis.time = time.time() - start
+        await get_redis()
+        health.services.redis.ok = True
+        health.services.redis.msg = "Redis is ok"
+        health.services.redis.time = time.time() - start
 
     except Exception as e:
         health.ok = False
