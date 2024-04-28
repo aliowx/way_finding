@@ -13,15 +13,15 @@ from app.db import Base
 from app.crud import crud_user
 from app.core.security import JWTHandler
 from app.db.init_db import init_db
-from app.log import log
-from app.api.api_v1.endpoints import health
+from app.db import session as db_session
+
 
 ASYNC_SQLALCHEMY_DATABASE_URL = f"sqlite+aiosqlite:///./test.db"
 
-engine = create_async_engine(ASYNC_SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
+async_engine = create_async_engine(ASYNC_SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
 
-async_session_test = async_sessionmaker(
-    bind=engine,
+async_session = async_sessionmaker(
+    bind=async_engine,
     class_=AsyncSession,
     expire_on_commit=False,
     autocommit=False,
@@ -30,7 +30,7 @@ async_session_test = async_sessionmaker(
 
 
 async def override_get_db_async() -> AsyncGenerator:
-    async with async_session_test() as db:
+    async with async_session() as db:
         yield db
         await db.commit()
 
@@ -40,8 +40,7 @@ app.dependency_overrides[get_db_async] = override_get_db_async
 
 @pytest.fixture(autouse=True)
 def patch_async_session_maker(monkeypatch: pytest.MonkeyPatch):
-    monkeypatch.setattr(log, "async_session", async_session_test)
-    monkeypatch.setattr(health, "async_session", async_session_test)
+    monkeypatch.setattr(db_session, "async_session", async_session)
 
 
 @pytest.fixture(scope="session")
@@ -53,8 +52,6 @@ def event_loop(request) -> Generator:  # noqa: indirect usage
 
 @pytest_asyncio.fixture(scope="session")
 async def db() -> AsyncSession:
-    async_engine = engine
-    async_session = async_session_test
 
     async with async_session() as session:
         async with async_engine.begin() as connection:

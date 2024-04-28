@@ -8,7 +8,8 @@ from fastapi.responses import Response
 from fastapi.routing import APIRoute
 
 from app import crud, exceptions, schemas
-from app.db.session import async_session
+from app.db import session
+
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +61,7 @@ async def save_request_log_async(
     try:
         request_log_in = schemas.RequestLogCreate(**request_log_data)
 
-        async with async_session() as db:
+        async with session.async_session() as db:
             await crud.request_log.create(db=db, obj_in=request_log_in)
             await db.commit()
 

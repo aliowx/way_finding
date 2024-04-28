@@ -4,7 +4,7 @@ from app.core.config import settings
 from app.api.deps import health_user, get_redis
 from app import schemas, crud
 from app.utils import utils
-from app.db.session import async_session
+from app.db import session
 
 router = APIRouter()
 
@@ -49,7 +49,7 @@ async def deep_check(_=Depends(health_user)) -> schemas.HealthCheck:
     # Postgres
     start = time.time()
     try:
-        async with async_session() as db:
+        async with session.async_session() as db:
             user = await crud.user.get_by_email(db, email=settings.FIRST_SUPERUSER)
 
         if user:

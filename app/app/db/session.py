@@ -2,12 +2,12 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from app.core.config import settings
 
-engine_async = create_async_engine(
+async_engine = create_async_engine(
     settings.POSTGRES_ASYNC_URI.unicode_string()
 )
 
 async_session = async_sessionmaker(
-    bind=engine_async,
+    bind=async_engine,
     class_=AsyncSession,
     autocommit=False,
     autoflush=False,
