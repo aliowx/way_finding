@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from hashlib import sha256
 from typing import Any
 
 import jwt
@@ -14,11 +15,11 @@ basic_security = HTTPBasic(auto_error=False)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return bcrypt.checkpw(plain_password.encode(), hashed_password.encode())
+    return hashed_password == sha256(plain_password.encode()).hexdigest()
 
 
 def get_password_hash(password: str) -> str:
-    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    return sha256(password.encode()).hexdigest()
 
 
 class JWTHandler:

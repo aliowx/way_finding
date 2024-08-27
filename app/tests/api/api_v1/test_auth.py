@@ -84,6 +84,13 @@ class TestAuth:
         assert response.status_code == 200
         assert settings.FIRST_SUPERUSER == response.json()["content"]["email"]
 
+        # call service invalid pass
+        response = await client.get(
+            f"{settings.API_V1_STR}/auth/me",
+            auth=BasicAuth(settings.FIRST_SUPERUSER, "random"),
+        )
+        assert response.status_code == 401
+
         # call service invalid credential
         response = await client.get(
             f"{settings.API_V1_STR}/auth/me", auth=BasicAuth("random", "random")
