@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+  backend:
+    image: backend-img
+    container_name: backend
+    build:
+      context: .
+      dockerfile: backend.dockerfile
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "8091:1080"
+
+  celery-worker:
+    image: celery-img
+    container_name: celery
+    restart: always
+    depends_on:
+      - backend
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: celeryworker.dockerfile
+
+  rocketry-worker:
+    image: rocketry-img
+    container_name: rocketry
+    build:
+      context: .
+      dockerfile: rocketryscheduler.dockerfile
+    restart: always
+    depends_on:
+      - backend
+    env_file:
+      - .env
