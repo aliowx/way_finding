@@ -21,3 +21,5 @@ class Vertex(Base):
         foreign_keys="[Edge.destination_vertex_id]",
         back_populates="destination_vertex",
     )
+
+    
