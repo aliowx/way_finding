@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 
 class User(BaseModel):
@@ -11,8 +12,20 @@ class User(BaseModel):
 
 
 class VertexCreate(BaseModel):
-    x: float | None = None
+    x: Optional[float] | None = None
+    y: Optional[float] | None = None
 
 
 class VertexUpdate(BaseModel):
-    pass
+    x: Optional[float] | None = None
+    y: Optional[float] | None = None
+    # name: Optional[bool] = None
+
+    class Config:
+        orm_mode = True
+
+
+class VertexDelete(BaseModel):
+    id: Optional[int] | None = None
+    class Config:
+        orm_mode = True
