@@ -75,25 +75,31 @@ def angle_between_three_points(
     point_a: tuple[float, float],
     point_b: tuple[float, float],
     point_c: tuple[float, float],
-):
-    x1x2s = math.pow((point_a[0] - point_b[0]), 2)
-    x1x3s = math.pow((point_a[0] - point_c[0]), 2)
-    x2x3s = math.pow((point_b[0] - point_c[0]), 2)
+) -> tuple[float, str]:
+    # Convert points to vectors
+    vector_ab = np.array([point_b[0] - point_a[0], point_b[1] - point_a[1]])
+    vector_bc = np.array([point_c[0] - point_b[0], point_c[1] - point_b[1]])
 
-    y1y2s = math.pow((point_a[1] - point_b[1]), 2)
-    y1y3s = math.pow((point_a[1] - point_c[1]), 2)
-    y2y3s = math.pow((point_b[1] - point_c[1]), 2)
+    dot_product = np.dot(vector_ab, vector_bc)
+    magnitude_ab = np.linalg.norm(vector_ab)
+    magnitude_bc = np.linalg.norm(vector_bc)
 
-    cosine_angle = np.arccos(
-        (x1x2s + y1y2s + x2x3s + y2y3s - x1x3s - y1y3s)
-        / (2 * math.sqrt(x1x2s + y1y2s) * math.sqrt(x2x3s + y2y3s))
-    )
-    angle = np.degrees(cosine_angle)
-    if angle == 180.0:
+    if magnitude_ab == 0 or magnitude_bc == 0:
+        return 0.0, "undefined"
+
+    cosine_angle = dot_product / (magnitude_ab * magnitude_bc)
+    angle = np.degrees(np.arccos(np.clip(cosine_angle, -1.0, 1.0)))
+
+    cross_product = np.cross(vector_ab, vector_bc)
+
+    tolerance = 1e-2
+
+    if abs(angle - 180) < tolerance or abs(angle) < tolerance:
         return angle, "straight"
-    if angle > 180:
+    elif cross_product > 0:
         return angle, "left"
-    return angle, "right"
+    else:
+        return angle, "right"
 
 
 def generate_direction(
