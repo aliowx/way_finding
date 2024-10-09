@@ -1,5 +1,7 @@
 import logging
-
+import heapq
+import numpy as np
+import math
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import crud, schemas
@@ -19,5 +21,113 @@ async def create_super_admin(db: AsyncSession) -> None:
         await crud.user.create(db=db, obj_in=user)
 
 
+async def get_graph_data(db: AsyncSession) -> tuple[dict, dict]:
+    vertices = await crud.vertex.get_multi(db=db)
+    edges = await crud.edge.get_multi(db=db)
+
+    graph: dict[int, dict[int, float]] = {vertex.id: {} for vertex in vertices}
+    coordinates: dict[int, tuple[int, float]] = {
+        vertex.id: (vertex.x, vertex.y) for vertex in vertices
+    }
+
+    for edge in edges:
+        graph[edge.source_vertex_id][edge.destination_vertex_id] = edge.distance
+
+    return graph, coordinates
+
+
+def dijkstra(graph: dict[int, dict[int, float]], start_vertex: int):
+    queue: list[tuple[int, int]] = [(0, start_vertex)]
+    distances: dict[int, float] = {vertex: float("inf") for vertex in graph}
+    distances[start_vertex] = 0
+    previous_vertices: dict[int, int | None] = {vertex: None for vertex in graph}
+
+    while queue:
+        current_distance, current_vertex = heapq.heappop(queue)
+
+        if current_distance > distances[current_vertex]:
+            continue
+
+        for neighbor, weight in graph[current_vertex].items():
+            distance = current_distance + weight
+
+            if distance < distances[neighbor]:
+                distances[neighbor] = distance
+                previous_vertices[neighbor] = current_vertex
+                heapq.heappush(queue, (distance, neighbor))
+    return distances, previous_vertices
+
+
+def reconstruct_path(
+    destination_vertex: int, previous_vertices: dict[int, int | None]
+) -> list[int]:
+    path: list[int] = []
+    current_vertex = destination_vertex
+
+    while current_vertex is not None:
+        path.append(current_vertex)
+        current_vertex = previous_vertices[current_vertex]
+
+    return path[::-1]
+
+
+def angle_between_three_points(
+    point_a: tuple[float, float],
+    point_b: tuple[float, float],
+    point_c: tuple[float, float],
+):
+    x1x2s = math.pow((point_a[0] - point_b[0]), 2)
+    x1x3s = math.pow((point_a[0] - point_c[0]), 2)
+    x2x3s = math.pow((point_b[0] - point_c[0]), 2)
+
+    y1y2s = math.pow((point_a[1] - point_b[1]), 2)
+    y1y3s = math.pow((point_a[1] - point_c[1]), 2)
+    y2y3s = math.pow((point_b[1] - point_c[1]), 2)
+
+    cosine_angle = np.arccos(
+        (x1x2s + y1y2s + x2x3s + y2y3s - x1x3s - y1y3s)
+        / (2 * math.sqrt(x1x2s + y1y2s) * math.sqrt(x2x3s + y2y3s))
+    )
+    angle = np.degrees(cosine_angle)
+    if angle == 180.0:
+        return angle, "straight"
+    if angle > 180:
+        return angle, "left"
+    return angle, "right"
+
+
+def generate_direction(
+    path: list[int],
+    coordinates: dict[int, tuple[int, float]],
+    graph: dict[int, dict[int, float]],
+) -> list[str]:
+    directions: list[str] = []
+
+    for i in range(1, len(path) - 1):
+        p1 = coordinates[path[i - 1]]
+        p2 = coordinates[path[i]]
+        p3 = coordinates[path[i + 1]]
+
+        angle, direction = angle_between_three_points(p1, p2, p3)
+        distance = graph[path[i - 1]][path[i]]
+
+        directions.append(
+            f"From vertex {path[i-1]} walk {distance}m to vertex {path[i]}, turn {direction} by {angle:.2f} degrees."
+        )
+    return directions
+
+
 async def init_db(db: AsyncSession) -> None:
     await create_super_admin(db)
+
+
+async def shortest_path(db: AsyncSession) -> None:
+    graph, coordinates = await get_graph_data(db)
+    start_vertex, destination_vertex = (1, 8)
+    distances, previous_vertices = dijkstra(graph=graph, start_vertex=start_vertex)
+    find_path = reconstruct_path(
+        destination_vertex=destination_vertex,
+        previous_vertices=previous_vertices,
+    )
+    directions = generate_direction(find_path, coordinates=coordinates, graph=graph)
+    print(directions)
