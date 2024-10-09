@@ -1,29 +1,31 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List
+from app import crud,schemas
 
-from app import crud, models, schemas
 from app.api import deps
-from app.api.api_v1 import services
-from app.log import log
-from app.utils import APIResponse, APIResponseType
-from cache import cache, invalidate
+from cache import cache
 from cache.util import ONE_DAY_IN_SECONDS
 
 
 router = APIRouter()
 namespace = "vertex"
 
-@router.get("/{position}")
+@router.get("/")
 @cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
-async def get_x(
-    position: float,
-    current_user: models.User = Depends(deps.get_current_superuser_from_cookie_or_basic),
+async def read_users(
     db: AsyncSession = Depends(deps.get_db_async),
-) -> APIResponseType[schemas.User]:
-    """
-    Get a specific Position.
-    """
-    response = await services.read_user_by_id(
-        db=db, position=position, current_user=current_user
-    )
-    return APIResponse(response)
+    position: float = 0
+) -> List[schemas.User]:
+    users = await crud.vertex.get_multi(db, position=position)
+    return [schemas.User.model_config(user) for user in users]
+
+@router.post("/")
+@cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
+async def create_vertax(
+    db: AsyncSession = Depends(deps.get_db_async),
+    *,
+    vertex_in: schemas.VertexCreate,
+):
+    users = await crud.vertex.create(db, obj_in = vertex_in)
+    return users

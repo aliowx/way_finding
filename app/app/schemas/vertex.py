@@ -1,19 +1,18 @@
 from pydantic import BaseModel
 
 
-class VertexBase(BaseModel):
-    x: float
-    y: float
-    name: str
-    description: str
+class User(BaseModel):
+    id: int
+    username: str
+    email: str
+
+    class Config:
+        orm_mode = True
 
 
-class VertexCreate(VertexBase):
-    pass
-
-
-class VertexUpdate(VertexBase):
+class VertexCreate(BaseModel):
     x: float | None = None
-    y: float | None = None
-    name: str | None = None
-    description: str | None = None
+
+
+class VertexUpdate(BaseModel):
+    pass

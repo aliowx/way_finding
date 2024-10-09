@@ -1,9 +1,10 @@
-<<<<<<< HEAD
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import and_, select
 
 from app.crud.base import CRUDBase
-=======
+
+
 from typing import Any
 
 from sqlalchemy import and_, select

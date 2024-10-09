@@ -17,6 +17,7 @@ from app.models import User
 from cache import Cache
 
 
+
 def init_logger():
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
