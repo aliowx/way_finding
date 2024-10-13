@@ -1,24 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List
 from app import crud, schemas
 from app.api import deps
 from cache import cache
 from cache.util import ONE_DAY_IN_SECONDS
-from sqlalchemy import select 
+from sqlalchemy import select
+from app import exceptions as exc
+from app import schemas, utils
 
 router = APIRouter()
-namespace = "vertex"
-
-@router.get("/")
-@cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
-async def read_users(
-    db: AsyncSession = Depends(deps.get_db_async),
-    position_X: float | None = None,
-    position_Y: float | None = None,
-):
-    position = await crud.vertex.get_multi(db)
-    return position
+namespace = "Position"
 
 
 @router.post("/")
@@ -30,12 +21,27 @@ async def create_vertax(
 ):
 
     result = await db.execute(
-        select(crud.vertex.model).filter_by(x=vertex_in.x,y=vertex_in.y))
+        select(crud.vertex.model).filter_by(x=vertex_in.x, y=vertex_in.y)
+    )
     existing_vertex = result.scalars().first()
-    if   existing_vertex:
-        raise HTTPException(status_code=400, detail='Vertex already exists!')
-    x = await crud.vertex.create(db, obj_in=vertex_in)
-    return x
+    if existing_vertex:
+        raise exc.AlreadyExistException(
+            detail="The existing_vertex already exists",
+            msg_code=utils.MessageCodes.bad_request,
+        )
+    existing_vertex = await crud.vertex.create(db, obj_in=vertex_in)
+    return existing_vertex
+
+
+@router.get("/")
+@cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
+async def read_users(
+    db: AsyncSession = Depends(deps.get_db_async),
+    position_X: float | None = None,
+    position_Y: float | None = None,
+):
+    position = await crud.vertex.get_multi(db)
+    return position
 
 
 @router.delete("/{id}")
