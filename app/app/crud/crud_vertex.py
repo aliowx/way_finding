@@ -1,8 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import and_, select
-
-# from app.core.security import get_password_hash, verify_password
-# from fastapi.encoders import jsonable_encoder
 from app.crud.base import CRUDBase
 from typing import Any
 from sqlalchemy import and_, select
@@ -26,12 +23,13 @@ class CRUDVertex(CRUDBase[Vertex, VertexCreate, VertexUpdate]):
         return response.scalar_one_or_none()
 
     async def create_(db: AsyncSession, vertex: VertexCreate | dict) -> Base | Any:
+        if isinstance:
+            pass
+
+    async def uodata_() -> None:
         pass
 
-    async def update_():
-        pass
-
-    async def del_():
+    async def del_() -> None:
         pass
 
 

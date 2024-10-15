@@ -26,7 +26,7 @@ async def create_vertax(
     existing_vertex = result.scalars().first()
     if existing_vertex:
         raise exc.AlreadyExistException(
-            detail="The existing_vertex already exists",
+            detail="The position already exists!",
             msg_code=utils.MessageCodes.bad_request,
         )
     existing_vertex = await crud.vertex.create(db, obj_in=vertex_in)
@@ -37,8 +37,8 @@ async def create_vertax(
 @cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
 async def read_users(
     db: AsyncSession = Depends(deps.get_db_async),
-    position_X: float | None = None,
-    position_Y: float | None = None,
+    X: float | None = None,
+    Y: float | None = None,
 ):
     position = await crud.vertex.get_multi(db)
     return position
