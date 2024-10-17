@@ -4,6 +4,7 @@ from app.crud.base import CRUDBase
 from app.db.base_class import Base
 from app.schemas.vertex import VertexCreate, VertexUpdate
 from app.models.vertex import Vertex
+from typing import Any
 
 
 class CRUDVertex(CRUDBase[Vertex, VertexCreate, VertexUpdate]):
