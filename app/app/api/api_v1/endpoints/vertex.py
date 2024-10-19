@@ -8,20 +8,16 @@ from sqlalchemy import select
 from app import exceptions as exc
 from app import schemas, utils
 import pandas as pd 
-
-
 router = APIRouter()
 namespace = "Position"
-
-df = pd.read_csv(r'/home/ali/Desktop/data1.csv')
-
+df =pd.read_csv('')
 
 @router.post("/")
 @cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
 async def create_vertax(
     db: AsyncSession = Depends(deps.get_db_async),
     *,
-    vertex_in: schemas.VertexCreate,df
+    vertex_in: schemas.VertexCreate,
 ):
 
     result = await db.execute(
@@ -34,6 +30,7 @@ async def create_vertax(
             msg_code=utils.MessageCodes.bad_request,
         )
     existing_vertex = await crud.vertex.create(db, obj_in=vertex_in)
+    return existing_vertex
     
     try:
         for index, row in df.iterrows():

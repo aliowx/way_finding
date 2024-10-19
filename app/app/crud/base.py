@@ -161,3 +161,5 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         response = await db.execute(query)
         await db.commit()
         return response.scalar_one_or_none()
+
+
