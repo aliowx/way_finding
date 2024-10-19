@@ -10,7 +10,7 @@ from app import schemas, utils
 import pandas as pd 
 router = APIRouter()
 namespace = "Position"
-df =pd.read_csv('')
+
 
 @router.post("/")
 @cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
@@ -32,25 +32,6 @@ async def create_vertax(
     existing_vertex = await crud.vertex.create(db, obj_in=vertex_in)
     return existing_vertex
     
-    try:
-        for index, row in df.iterrows():
-            vertex_form_df = crud.vertex.model(
-            x = row['start x'],
-            y = row['start y']
-
-            )
-        db.add(vertex_form_df
-        )
-        await db.commit()
-
-    except IndentationError:
-        await db.rollback()
-        raise exc.AlreadyExistException(
-            detail = "some position in the csv already exist!",
-            msg_code=utils.MessageCodes.bad_request,
-        )
-    return {"msg": "Vertices created successfully from CSV."}
-
 
 @router.get("/")
 @cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)

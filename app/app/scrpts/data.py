@@ -5,7 +5,7 @@ from fastapi import Depends
 from app.api import deps
 from app import exceptions as exc
 
-df = pd.read_csv('data1.csv')
+df = pd.read_csv(r'/home/ali/Desktop/data1.csv')
 
 async def df(
     db: AsyncSession = Depends(deps.get_db_async),
@@ -46,4 +46,4 @@ async def df(
             db.add(vertex)
             await db.commit()
         except Exception as ex:
-            await db.rollback()                      
+            await db.rollback()
