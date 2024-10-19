@@ -3,22 +3,33 @@ from typing import Optional
 
 
 class Vertex(BaseModel):
-    X: float
-    y: float
+    endx: float
+    endy: float
+    startx: float
+    starty: float
+    pox: float
+    poy: float
     
     class Config:
         orm_mode = True
 
 
 class VertexCreate(BaseModel):
-    x: Optional[float] | None = None
-    y: Optional[float] | None = None
-
+    endx: float
+    endy: float
+    startx: float
+    starty: float
+    pox: float
+    poy: float
+    
 
 class VertexUpdate(BaseModel):
-    x: Optional[float] | None = None
-    y: Optional[float] | None = None
-    # name: Optional[bool] = None
+    endx: float
+    endy: float
+    startx: float
+    starty: float
+    pox: float
+    poy: float
 
     class Config:
         orm_mode = True

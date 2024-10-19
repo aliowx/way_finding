@@ -8,10 +8,12 @@ class Vertex(Base):
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True, index=True
     )
-    x: Mapped[int] = mapped_column(Float, nullable=True)
-    y: Mapped[int] = mapped_column(Float, nullable=True)
-    name: Mapped[str] = mapped_column(String(20), nullable=True)
-    description: Mapped[str] = mapped_column(String(50), nullable=True)
+    endx: Mapped[int] = mapped_column(Float, nullable=True)
+    endy: Mapped[int] = mapped_column(Float, nullable=True)
+    startx: Mapped[int] = mapped_column(Float, nullable=True)
+    starty: Mapped[int] = mapped_column(Float, nullable=True)
+    pox: Mapped[int] = mapped_column(Float, nullable=True)
+    poy: Mapped[int] = mapped_column(Float, nullable=True)
 
     source_edges: Mapped[list["Edge"]] = relationship(
         "Edge", foreign_keys="[Edge.source_vertex_id]", back_populates="source_vertex"
