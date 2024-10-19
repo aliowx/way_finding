@@ -18,16 +18,19 @@ class CRUDVertex(CRUDBase[Vertex, VertexCreate, VertexUpdate]):
         )
         response = await db.execute(query)
         return response.scalar_one_or_none()
-
-    async def create_(db: AsyncSession, vertex: VertexCreate | dict) -> Base | Any:
-        if isinstance:
-            pass
-
-    async def uodata_() -> None:
+    async def create_multi(
+            db: AsyncSession,
+            vertex_list:list[VertexCreate]
+            
+    ):
         pass
 
-    async def del_() -> None:
+
+    async def get_multi():
         pass
+        
+
+
 
 
 vertex = CRUDVertex(Vertex)
