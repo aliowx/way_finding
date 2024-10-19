@@ -40,21 +40,11 @@ async def create_vertex(
     vertex_in: schemas.VertexCreate,
 ):
 
-    result = await db.execute(
-        select(crud.vertex.model).filter_by(x=vertex_in.x, y=vertex_in.y)
-    )
-    existing_vertex = result.scalars().first()
-    if existing_vertex:
-        raise exc.AlreadyExistException(
-            detail="The position already exists!",
-            msg_code=utils.MessageCodes.bad_request,
-        )
     existing_vertex = await crud.vertex.create(db, obj_in=vertex_in)
     return existing_vertex
-    
+
 
 @router.get("/")
-@cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
 async def read_users(
     db: AsyncSession = Depends(deps.get_db_async),
     _: models.User = Depends(deps.get_current_superuser_from_cookie_or_basic)
