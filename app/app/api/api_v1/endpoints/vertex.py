@@ -1,29 +1,70 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app import crud, models, schemas
+from app import crud, schemas
 from app.api import deps
-from app.api.api_v1 import services
-from app.log import log
-from app.utils import APIResponse, APIResponseType
-from cache import cache, invalidate
+from cache import cache
 from cache.util import ONE_DAY_IN_SECONDS
-
-
+from sqlalchemy import select
+from app import exceptions as exc
+from app import schemas, utils
+import pandas as pd 
 router = APIRouter()
-namespace = "vertex"
+namespace = "Position"
+df =pd.read_csv('')
 
-@router.get("/{position}")
+@router.post("/")
 @cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
-async def get_x(
-    position: float,
-    current_user: models.User = Depends(deps.get_current_superuser_from_cookie_or_basic),
+async def create_vertax(
     db: AsyncSession = Depends(deps.get_db_async),
-) -> APIResponseType[schemas.User]:
-    """
-    Get a specific Position.
-    """
-    response = await services.read_user_by_id(
-        db=db, position=position, current_user=current_user
+    *,
+    vertex_in: schemas.VertexCreate,
+):
+
+    result = await db.execute(
+        select(crud.vertex.model).filter_by(x=vertex_in.x, y=vertex_in.y)
     )
-    return APIResponse(response)
+    existing_vertex = result.scalars().first()
+    if existing_vertex:
+        raise exc.AlreadyExistException(
+            detail="The position already exists!",
+            msg_code=utils.MessageCodes.bad_request,
+        )
+    existing_vertex = await crud.vertex.create(db, obj_in=vertex_in)
+    return existing_vertex
+    
+    try:
+        for index, row in df.iterrows():
+            vertex_form_df = crud.vertex.model(
+            x = row['start x'],
+            y = row['start y']
+
+            )
+        db.add(vertex_form_df
+        )
+        await db.commit()
+
+    except IndentationError:
+        await db.rollback()
+        raise exc.AlreadyExistException(
+            detail = "some position in the csv already exist!",
+            msg_code=utils.MessageCodes.bad_request,
+        )
+    return {"msg": "Vertices created successfully from CSV."}
+
+
+@router.get("/")
+@cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
+async def read_users(
+    db: AsyncSession = Depends(deps.get_db_async),
+    X: float | None = None,
+    Y: float | None = None,
+):
+    position = await crud.vertex.get_multi(db)
+    return position
+
+
+@router.delete("/{id}")
+@cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
+async def delet_vertax(db: AsyncSession = Depends(deps.get_db_async), *, id: int):
+    x_ = await crud.vertex.remove(db, id_=id)
+    return x_

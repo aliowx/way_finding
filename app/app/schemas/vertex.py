@@ -1,19 +1,30 @@
 from pydantic import BaseModel
+from typing import Optional
 
 
-class VertexBase(BaseModel):
-    x: float
+class Vertex(BaseModel):
+    X: float
     y: float
-    name: str
-    description: str
+    
+    class Config:
+        orm_mode = True
 
 
-class VertexCreate(VertexBase):
-    pass
+class VertexCreate(BaseModel):
+    x: Optional[float] | None = None
+    y: Optional[float] | None = None
 
 
-class VertexUpdate(VertexBase):
-    x: float | None = None
-    y: float | None = None
-    name: str | None = None
-    description: str | None = None
+class VertexUpdate(BaseModel):
+    x: Optional[float] | None = None
+    y: Optional[float] | None = None
+    # name: Optional[bool] = None
+
+    class Config:
+        orm_mode = True
+
+
+class VertexDelete(BaseModel):
+    id: Optional[int] | None = None
+    class Config:
+        orm_mode = True

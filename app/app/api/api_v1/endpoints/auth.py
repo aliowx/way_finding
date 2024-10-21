@@ -1,9 +1,7 @@
 import time
-
 from fastapi import APIRouter, Depends, Request, Response
 from redis.asyncio import client
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.api import deps
 from app.api.api_v1 import services
 from app.core.security import JWTHandler
@@ -54,6 +52,7 @@ async def register(
     current_user: models.User = Depends(deps.get_current_superuser_from_cookie_or_basic),
 ) -> APIResponseType[schemas.User]:
     """Register new user"""
+    print(10*"!#")
     response = await services.register(db=db, user_in=user_in)
     return APIResponse(response)
 
