@@ -1,31 +1,13 @@
-
+from fastapi import APIRouter, HTTPException, Depends 
 from sqlalchemy.ext.asyncio import AsyncSession
 from app import crud, models, schemas
 from app.api import deps
 from sqlalchemy import select
 from app import exceptions as exc
+from sqlalchemy import select
+from app import exceptions as exc
 from app import schemas
-from app.api.api_v1.services import vertex
-
-router = APIRouter()
-namespace = "Position"
-
-
-@router.post("/")
-async def create_vertax(
-    db: AsyncSession = Depends(deps.get_db_async),
-    *,
-    vertex_in: schemas.VertexCreate,
-):
-    try:
-        new_vertex = await vertex.register_position(
-            db=db,input=vertex_in
-        )
-    except Exception as e:
-        raise e
-    return new_vertex
-
-
+from app.api.api_v1.services.vertex import VertexService 
 router = APIRouter()
 namespace = "Position"
 
@@ -39,9 +21,22 @@ async def create_vertex(
     *,
     vertex_in: schemas.VertexCreate,
 ):
+    vertx_servis = VertexService(db)
 
-    existing_vertex = await crud.vertex.create(db, obj_in=vertex_in)
-    return existing_vertex
+    try:
+        new_vertex = await vertx_servis.register_position(
+            endx=vertex_in.endx,
+            endy=vertex_in.endy,
+            startx=vertex_in.startx,
+            starty=vertex_in.starty,
+            pox=vertex_in.pox,
+            poy=vertex_in.poy,
+        )
+        return new_vertex
+    except HTTPException as e:
+        raise e
+
+
 
 
 @router.get("/")

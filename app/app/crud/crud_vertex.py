@@ -19,6 +19,17 @@ class CRUDVertex(CRUDBase[Vertex, VertexCreate, VertexUpdate]):
         poy: float,
     ) -> Vertex | None:
 
+    async def get_(
+        self,
+        db: AsyncSession,
+        endx: float,
+        endy: float,
+        startx: float,
+        starty: float,
+        pox: float,
+        poy: float,
+    ) -> Vertex | None:
+
         query = select(self.model).where(
             and_(
                 self.model.endx == endx,
@@ -27,13 +38,13 @@ class CRUDVertex(CRUDBase[Vertex, VertexCreate, VertexUpdate]):
                 self.model.starty == starty,
                 self.model.pox == pox,
                 self.model.poy == poy,
-                self.model.is_deleted.is_(None),
+                self.model.is_deleted.is_(False),
             )
         )
         
+        
         response = await db.execute(query)
         return response.scalar_one_or_none()
-<<<<<<< HEAD
 
     async def create_multi(self, db: AsyncSession, vertex_list: list[VertexCreate]):
         vertices = []
@@ -54,15 +65,5 @@ class CRUDVertex(CRUDBase[Vertex, VertexCreate, VertexUpdate]):
         return response.scalars().all()
 
 
-=======
-    async def get_multi(
-        self, db: AsyncSession, skip: int = 0, limit: int = 100
-    ) -> list[Vertex]:
-        query = select(self.model).offset(skip).limit(limit)
-        response = await db.execute(query)  
-        return response.scalars().all()  
-
-
-
->>>>>>> origin/feature/add-test
 vertex = CRUDVertex(Vertex)
+
