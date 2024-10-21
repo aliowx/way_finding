@@ -1,16 +1,44 @@
-import time 
 
-from app import schemas, utils
 from sqlalchemy.ext.asyncio import AsyncSession
+from app import schemas, utils
 from app import exceptions as exc
 from app import crud 
 
-async def register(db: AsyncSession, x_in: schemas.VertexCreate) -> schemas.Vertex:
-    x = await crud.user.get_by_x(db=db, email=x_in.email)
-    if x:
-        raise exc.AlreadyExistException(
-            detail="The user with this username already exists",
-            msg_code=utils.MessageCodes.bad_request,
+class VertexService:
+    def __init__(self,db:AsyncSession):
+        self.db = db  
+    async def register_position(
+            self,
+            endx: schemas.VertexCreate,
+            endy: schemas.VertexCreate,
+            startx: schemas.VertexCreate,
+            starty: schemas.VertexCreate,
+            pox: schemas.VertexCreate,
+            poy: schemas.VertexCreate,
+    )-> schemas.vertex:
+        x = await  crud.vertex.get_(
+            db=self.db,
+            endx=float,
+            endy=float,
+            startx=float,
+            starty=float,
+            pox=float,
+            poy=float
         )
-    x = await crud.user.create(db=db, obj_in=x_in)
-    return x
+
+        if x:
+            raise exc.AlreadyExistException(
+                detail="this position is already exist ",
+                msg_code=utils.MessageCodes.bad_request,
+            )
+        vertax_data = schemas.VertexCreate(
+
+            endx=endx,
+            endy=endy,
+            startx=startx,
+            starty=starty,
+            pox=pox,
+            poy=poy
+        )
+        x = await crud.vertex.create(db=self.db,obj_in=vertax_data)
+        return x 
