@@ -38,7 +38,7 @@ class CRUDVertex(CRUDBase[Vertex, VertexCreate, VertexUpdate]):
                 self.model.starty == starty,
                 self.model.pox == pox,
                 self.model.poy == poy,
-                self.model.is_deleted.is_(False),
+                self.model.is_deleted.is_(None),
             )
         )
         
