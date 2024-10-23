@@ -34,16 +34,6 @@ class CRUDVertex(CRUDBase[Vertex, VertexCreate, VertexUpdate]):
         response = await db.execute(query)
         return response.scalar_one_or_none()
 
-    async def create_multi(self, db: AsyncSession, vertex_list: list[VertexCreate]):
-        vertices = []
-
-        for vertex_data in vertex_list:
-            vertex = await self.cerate(db=db, obj_in=vertex_data)
-            vertices.append(vertex)
-
-        await db.commit()
-        return vertices
-
     async def get_multi(
         self, db: AsyncSession, skip: int = 0, limit: int = 100
     ) -> list[Vertex]:
