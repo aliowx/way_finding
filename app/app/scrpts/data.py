@@ -9,21 +9,18 @@ from app.crud.crud_vertex import vertex
 
 df = pd.read_csv(r'/home/ali/Desktop/data1.csv')
 
-async def data(
-    *,
+async def save_vertex(
     vertex_in: schemas.VertexCreate,
 ):
     vertex_list = []  
     failed_insertions = []
-    async with async_session() as db:
-        crud.vertex.get(db=db)
-        
-        for index, row in df.iterrows():
+
+    for index, row in df.iterrows():
+        async with async_session() as db:
             vertex = crud.vertex.model(
                 x = row[''],
                 y = row['']
             )
-            
             vertex_list.append(vertex)
 
             if len(vertex_list) == 100:
