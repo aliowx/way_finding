@@ -9,7 +9,7 @@ async def register_position(
         db:AsyncSession,
         input:schemas.VertexCreate
 ):
-    x = await crud.vertex.get_(
+    vertex = await crud.vertex.get_(
         db=db,
         endx=input.endx,
         endy=input.endy,

@@ -107,7 +107,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return response.scalars().all()
 
     async def create(
-        self, db: AsyncSession, obj_in: list[CreateSchemaType] | dict
+        self, db: AsyncSession, obj_in: CreateSchemaType | dict
     ) -> ModelType:
         if not isinstance(obj_in, dict):
             obj_in = jsonable_encoder(obj_in)
@@ -126,7 +126,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     async def create_multi(
         self, db: AsyncSession, 
-        objs_in: Union[list[CreateSchemaType]] | dict
+        objs_in: Union[list[CreateSchemaType]] | list[dict]
     ) -> None:
                 
         objs = []
