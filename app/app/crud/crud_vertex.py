@@ -8,26 +8,39 @@ from typing import Any
 
 
 class CRUDVertex(CRUDBase[Vertex, VertexCreate, VertexUpdate]):
-    async def get_(self, db: AsyncSession, x: float, y: float) -> Vertex | None:
+    async def get_(
+        self,
+        db: AsyncSession,
+        endx: float,
+        endy: float,
+        startx: float,
+        starty: float,
+        pox: float,
+        poy: float,
+    ) -> Vertex | None:
+
         query = select(self.model).where(
             and_(
-                self.model.x == x,
-                self.model.y == y,
-                self.model.is_deleted.is_(True),
+                self.model.endx == endx,
+                self.model.endy == endy,
+                self.model.startx == startx,
+                self.model.starty == starty,
+                self.model.pox == pox,
+                self.model.poy == poy,
+                self.model.is_deleted.is_(None),
             )
         )
+        
         response = await db.execute(query)
         return response.scalar_one_or_none()
 
-    async def create_(db: AsyncSession, vertex: VertexCreate | dict) -> Base | Any:
-        if isinstance:
-            pass
+    async def get_multi(
+        self, db: AsyncSession, skip: int = 0, limit: int = 100
+    ) -> list[Vertex]:
 
-    async def uodata_() -> None:
-        pass
-
-    async def del_() -> None:
-        pass
+        quary = select(self.model).offset(skip).limit(limit)
+        response = await db.execute(quary)
+        return response.scalars().all()
 
 
 vertex = CRUDVertex(Vertex)

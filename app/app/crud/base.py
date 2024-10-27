@@ -1,12 +1,10 @@
 from datetime import datetime
 from typing import Any, Generic, Sequence, Type, TypeVar, Union
-
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy import Row, RowMapping, and_, exc, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.db.base_class import Base
 
 ModelType = TypeVar("ModelType", bound=Base)
@@ -124,6 +122,26 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         await db.refresh(db_obj)
         return db_obj
 
+    async def create_multi(
+        self, db: AsyncSession, 
+        objs_in: list[CreateSchemaType] | list[dict]
+    ) -> None:
+                
+        objs = []
+        for obj_in in objs_in:
+            if not isinstance(obj_in, dict):
+                obj_in = jsonable_encoder(obj_in)
+            db_obj = self.model(**obj_in)
+            objs.append(db_obj)  
+        try:
+            db.add_all(objs)
+            await db.commit()
+        except exc.IntegrityError:
+            await db.rollback()
+            raise HTTPException(
+                status_code=409,
+                detail="Resource already exists")
+
     async def update(
         self,
         db: AsyncSession,
@@ -161,5 +179,3 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         response = await db.execute(query)
         await db.commit()
         return response.scalar_one_or_none()
-
-

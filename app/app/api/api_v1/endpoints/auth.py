@@ -52,7 +52,6 @@ async def register(
     current_user: models.User = Depends(deps.get_current_superuser_from_cookie_or_basic),
 ) -> APIResponseType[schemas.User]:
     """Register new user"""
-    print(10*"!#")
     response = await services.register(db=db, user_in=user_in)
     return APIResponse(response)
 

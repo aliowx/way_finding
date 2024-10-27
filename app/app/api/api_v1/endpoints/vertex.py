@@ -1,59 +1,32 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, HTTPException, Depends 
 from sqlalchemy.ext.asyncio import AsyncSession
 from app import crud, schemas
 from app.api import deps
-from cache import cache
-from cache.util import ONE_DAY_IN_SECONDS
 from sqlalchemy import select
 from app import exceptions as exc
-from app import schemas, utils
-import pandas as pd 
+from app import schemas
+from app.api.api_v1.services import vertex
+
 router = APIRouter()
 namespace = "Position"
-df =pd.read_csv('')
+
 
 @router.post("/")
-@cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
 async def create_vertax(
     db: AsyncSession = Depends(deps.get_db_async),
     *,
     vertex_in: schemas.VertexCreate,
 ):
-
-    result = await db.execute(
-        select(crud.vertex.model).filter_by(x=vertex_in.x, y=vertex_in.y)
-    )
-    existing_vertex = result.scalars().first()
-    if existing_vertex:
-        raise exc.AlreadyExistException(
-            detail="The position already exists!",
-            msg_code=utils.MessageCodes.bad_request,
-        )
-    existing_vertex = await crud.vertex.create(db, obj_in=vertex_in)
-    return existing_vertex
-    
     try:
-        for index, row in df.iterrows():
-            vertex_form_df = crud.vertex.model(
-            x = row['start x'],
-            y = row['start y']
-
-            )
-        db.add(vertex_form_df
+        new_vertex = await vertex.register_position(
+            db=db, input=vertex_in
         )
-        await db.commit()
-
-    except IndentationError:
-        await db.rollback()
-        raise exc.AlreadyExistException(
-            detail = "some position in the csv already exist!",
-            msg_code=utils.MessageCodes.bad_request,
-        )
-    return {"msg": "Vertices created successfully from CSV."}
+    except Exception as e:
+        raise e
+    return new_vertex
 
 
 @router.get("/")
-@cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
 async def read_users(
     db: AsyncSession = Depends(deps.get_db_async),
     X: float | None = None,
@@ -64,7 +37,6 @@ async def read_users(
 
 
 @router.delete("/{id}")
-@cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
 async def delet_vertax(db: AsyncSession = Depends(deps.get_db_async), *, id: int):
     x_ = await crud.vertex.remove(db, id_=id)
     return x_

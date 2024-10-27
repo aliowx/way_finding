@@ -16,7 +16,7 @@ from app.exceptions import exception_handlers
 from app.models import User
 from cache import Cache
 
-
+import os
 
 def init_logger():
     logger = logging.getLogger()
@@ -76,6 +76,6 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.mount("/static", StaticFiles(directory="./app/app/static"), name="static")
 app.include_router(api_router, prefix=settings.API_V1_STR)
 app.add_middleware(GetAcceptLanguageMiddleware)
