@@ -18,13 +18,10 @@ async def register_position(
         pox=input.pox,
         poy=input.poy
     )
-
-
-    if x:
+    if vertex:
         raise exc.AlreadyExistException(
             detail="this position is already exist ",
             msg_code=utils.MessageCodes.bad_request,
         )
     
-    x = await crud.vertex.create(db=db,obj_in=input)
-    return x 
+    return await crud.vertex.create(db=db,obj_in=input)

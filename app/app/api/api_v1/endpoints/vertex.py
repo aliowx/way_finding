@@ -19,7 +19,7 @@ async def create_vertax(
 ):
     try:
         new_vertex = await vertex.register_position(
-            db=db,input=vertex_in
+            db=db, input=vertex_in
         )
     except Exception as e:
         raise e

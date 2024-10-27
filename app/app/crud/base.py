@@ -1,12 +1,10 @@
 from datetime import datetime
 from typing import Any, Generic, Sequence, Type, TypeVar, Union
-
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy import Row, RowMapping, and_, exc, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-# from app.schemas import VertexCreate
 from app.db.base_class import Base
 
 ModelType = TypeVar("ModelType", bound=Base)
@@ -126,7 +124,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     async def create_multi(
         self, db: AsyncSession, 
-        objs_in: Union[list[CreateSchemaType]] | list[dict]
+        objs_in: list[CreateSchemaType] | list[dict]
     ) -> None:
                 
         objs = []
@@ -181,5 +179,3 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         response = await db.execute(query)
         await db.commit()
         return response.scalar_one_or_none()
-
-

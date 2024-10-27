@@ -5,11 +5,9 @@ from app import crud
 from app.db.session import async_session
 from app.schemas.vertex import VertexCreate
 
-
-df = pd.read_csv('app/app/scrpts/vertex.csv')
-
-
+df = pd.read_csv('app/app/scripts/vertex.csv')
 logger = logging.getLogger()
+
 async def save_vertex():
 
     vertex_list = []  
