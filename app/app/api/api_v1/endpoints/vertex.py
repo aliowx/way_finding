@@ -1,26 +1,25 @@
-from fastapi import APIRouter, HTTPException, Depends 
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from app import crud, schemas
+from app import crud, models, schemas
 from app.api import deps
-from sqlalchemy import select
-from app import exceptions as exc
 from app import schemas
 from app.api.api_v1.services import vertex
+
 
 router = APIRouter()
 namespace = "Position"
 
 
 @router.post("/")
-async def create_vertax(
-    db: AsyncSession = Depends(deps.get_db_async),
-    *,
+async def create_vertex(
     vertex_in: schemas.VertexCreate,
+    db: AsyncSession = Depends(deps.get_db_async),
+    _: models.User = Depends(
+        deps.get_current_superuser_from_cookie_or_basic
+    ),
 ):
     try:
-        new_vertex = await vertex.register_position(
-            db=db, input=vertex_in
-        )
+        new_vertex = await vertex.register_position(db=db, input=vertex_in)
     except Exception as e:
         raise e
     return new_vertex
@@ -28,15 +27,21 @@ async def create_vertax(
 
 @router.get("/")
 async def read_users(
-    db: AsyncSession = Depends(deps.get_db_async),
-    X: float | None = None,
-    Y: float | None = None,
+    vertex_in: schemas.VertexCreate,
+    db:AsyncSession = Depends(deps.get_db_async),
+    current_user : models.User = Depends(
+        deps.get_current_superuser_from_cookie_or_basic
+    )
 ):
-    position = await crud.vertex.get_multi(db)
-    return position
+    return vertex_in
 
 
 @router.delete("/{id}")
-async def delet_vertax(db: AsyncSession = Depends(deps.get_db_async), *, id: int):
+async def delet_vertax(
+    db: AsyncSession = Depends(deps.get_db_async),
+    current_user : models.User = Depends(
+        deps.get_current_superuser_from_cookie_or_basic
+    ),
+):
     x_ = await crud.vertex.remove(db, id_=id)
     return x_
