@@ -3,7 +3,7 @@ import heapq
 import numpy as np
 import math
 from sqlalchemy.ext.asyncio import AsyncSession
-
+import asyncio
 from app import crud, schemas
 from app.core.config import settings
 
@@ -20,10 +20,9 @@ async def create_super_admin(db: AsyncSession) -> None:
         )
         await crud.user.create(db=db, obj_in=user)
 
-
 async def get_graph_data(db: AsyncSession) -> tuple[dict, dict]:
-    vertices = await crud.vertex.get_multi(db=db)
-    edges = await crud.edge.get_multi(db=db)
+    vertices = await crud.vertex.get_multi(db)  # Call without the 'db=' keyword
+    edges = await crud.edge.get_multi(db)  # Ensure your edge method is also correct
 
     graph: dict[int, dict[int, float]] = {vertex.id: {} for vertex in vertices}
     coordinates: dict[int, tuple[int, float]] = {
@@ -34,6 +33,7 @@ async def get_graph_data(db: AsyncSession) -> tuple[dict, dict]:
         graph[edge.source_vertex_id][edge.destination_vertex_id] = edge.distance
 
     return graph, coordinates
+
 
 
 def dijkstra(graph: dict[int, dict[int, float]], start_vertex: int):
@@ -137,3 +137,6 @@ async def shortest_path(db: AsyncSession) -> None:
     )
     directions = generate_direction(find_path, coordinates=coordinates, graph=graph)
     print(directions)
+
+if __name__== "__main__":
+    asyncio.run(shortest_path(db=AsyncSession))

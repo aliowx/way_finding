@@ -7,7 +7,9 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette.middleware.cors import CORSMiddleware
-from app.core.middleware.get_accept_language_middleware import GetAcceptLanguageMiddleware
+from app.core.middleware.get_accept_language_middleware import (
+    GetAcceptLanguageMiddleware,
+)
 
 from app.api.api_v1.api import api_router
 from app.core.config import settings
@@ -17,6 +19,7 @@ from app.models import User
 from cache import Cache
 
 import os
+
 
 def init_logger():
     logger = logging.getLogger()
@@ -76,6 +79,9 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-app.mount("/static", StaticFiles(directory="./app/app/static"), name="static")
+# app.mount("/static", StaticFiles(directory="./app/app/static"), name="static")
 app.include_router(api_router, prefix=settings.API_V1_STR)
 app.add_middleware(GetAcceptLanguageMiddleware)
+# app.mount("/static", StaticFiles(directory="./app/static"), name="static")
+app.mount("/static", StaticFiles(directory="./app/static"), name="static")
+

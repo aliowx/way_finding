@@ -33,14 +33,13 @@ class CRUDVertex(CRUDBase[Vertex, VertexCreate, VertexUpdate]):
         
         response = await db.execute(query)
         return response.scalar_one_or_none()
-
     async def get_multi(
         self, db: AsyncSession, skip: int = 0, limit: int = 100
     ) -> list[Vertex]:
+        query = select(self.model).offset(skip).limit(limit)  # Corrected from 'quary' to 'query'
+        response = await db.execute(query)  # Execute the query
+        return response.scalars().all()  # Return the results as a list of Vertex instances
 
-        quary = select(self.model).offset(skip).limit(limit)
-        response = await db.execute(quary)
-        return response.scalars().all()
 
 
 vertex = CRUDVertex(Vertex)
