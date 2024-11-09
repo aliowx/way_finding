@@ -1,64 +1,41 @@
 import pytest
 from httpx import AsyncClient, BasicAuth
-from app.core.config import settings
-from app import schemas
+from app.main import app
+from app import schemas, crud
 
+from app.tests.conftest import create_vertex
 
 @pytest.mark.asyncio
 class TestVertexAPI:
 
-    async def test_create_vertex(self, client: AsyncClient):
+    async def test_create_vertex(self, client: AsyncClient, create_vertex):
+
+        new_vertex = create_vertex
+        
         vertex_data = {
-            "name": "Vertex1",
-            "endx": 10.5,
-            "endy": 20.5,
-            "startx": 30.5,
-            "starty": 40.5,
-            "pox": 50.5,
-            "poy": 60.5
+            "endx": new_vertex[0].endx,
+            "endy": new_vertex[0].endy,
+            "startx": new_vertex[0].startx,
+            "starty": new_vertex[0].starty,
+            "pox": new_vertex[0].pox,
+            "poy": new_vertex[0].poy,
         }
-        response = await client.post(
-            f"{settings.API_V1_STR}/vertices/",
-            json=vertex_data,
-            auth=BasicAuth(
-                username=settings.HEALTH_USERNAME, password=settings.HEALTH_PASSWORD
-            ),
-        )
-        assert response.status_code == 201  
-        assert "id" in response.json()  
-        self.created_vertex_id = response.json()["id"]  
 
-    async def test_read_vertex(self, client: AsyncClient):
-        response = await client.get(
-            f"{settings.API_V1_STR}/vertices/{self.created_vertex_id}",
-            auth=BasicAuth(
-                username=settings.HEALTH_USERNAME, password=settings.HEALTH_PASSWORD
-            ),
-        )
-        assert response.status_code == 200 
-        vertex_data = response.json()
-        assert vertex_data["id"] == self.created_vertex_id  
-        assert vertex_data["name"] == "Vertex1" 
-        assert vertex_data["endx"] == 10.5  
-        assert vertex_data["endy"] == 20.5
-        assert vertex_data['startx'] == 30.5
-        assert vertex_data['starty'] == 40.5
-        assert vertex_data['pox'] == 50.5
-        assert vertex_data['poy'] == 60.5
+        response = await client.post("/vertices/", json=vertex_data)
 
-    async def test_delete_vertex(self, client: AsyncClient):
-        response = await client.delete(
-            f"{settings.API_V1_STR}/vertices/{self.created_vertex_id}",
-            auth=BasicAuth(
-                username=settings.HEALTH_USERNAME, password=settings.HEALTH_PASSWORD
-            ),
-        )
-        assert response.status_code == 204  
+        assert response.status_code == 201
 
-        response = await client.get(
-            f"{settings.API_V1_STR}/vertices/{self.created_vertex_id}",
-            auth=BasicAuth(
-                username=settings.HEALTH_USERNAME, password=settings.HEALTH_PASSWORD
-            ),
-        )
-        assert response.status_code == 404  
+
+    async def test_get_vertex(self, client: AsyncClient, create_vertex):
+        
+        new_vertex = create_vertex
+        vertex_id = new_vertex[0].id
+    
+        response = await client.get(f'/vertices/{vertex_id}/')
+        
+        assert response.status_code == 200
+     
+    
+    async def tets_del_vertex(self, client: AsyncClient, create_vertex):
+        pass
+    

@@ -8,9 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from httpx import AsyncClient
 
 from app.api.deps import get_db_async
+from app.app.schemas.vertex import VertexCreate
 from app.main import app, settings
 from app.db import Base
 from app.crud import crud_user
+from app.crud import crud_vertex
 from app.core.security import JWTHandler
 from app.db.init_db import init_db
 from app.db import session as db_session
@@ -51,7 +53,7 @@ def event_loop(request) -> Generator:  # noqa: indirect usage
 
 
 @pytest_asyncio.fixture(scope="session")
-async def db() -> AsyncSession:
+async def db() -> AsyncSession: # type: ignore
 
     async with async_session() as session:
         async with async_engine.begin() as connection:
@@ -63,8 +65,9 @@ async def db() -> AsyncSession:
     await async_engine.dispose()
 
 
+
 @pytest_asyncio.fixture(scope="module")
-async def client() -> AsyncClient:
+async def client() -> AsyncClient: # type: ignore
     async with AsyncClient(app=app, base_url="http://test") as client:
         yield client
 
@@ -81,3 +84,34 @@ async def superuser_tokens(db: AsyncSession) -> dict[str, str]:  # noqa: indirec
 
     tokens = {"Refresh-Token": refresh_token, "Access-Token": access_token}
     return tokens
+
+
+@pytest_asyncio.fixture(scope='session')
+async def create_vertex(
+    db: AsyncSession,
+    superuser_tokens
+):
+    vertex_data = [
+        VertexCreate(
+            endx=10.5,
+            endy=11.5,
+            startx=12.5,
+            starty=13.5,
+            pox=14.5,
+            poy=15.5  
+        )
+    ]
+    
+    if superuser_tokens is not None:
+
+        new_vertex = await crud_vertex.vertex.create_multi(db=db, objs_in=vertex_data)
+        db.add(new_vertex)
+
+        await db.commit()
+        
+        yield new_vertex
+        
+        for vertex in new_vertex:
+            await db.delete(vertex)
+        
+        await db.commit()

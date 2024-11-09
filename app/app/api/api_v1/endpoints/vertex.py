@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app import crud, models, schemas
 from app.api import deps
@@ -25,15 +25,19 @@ async def create_vertex(
     return new_vertex
 
 
-@router.get("/")
-async def read_users(
-    vertex_in: schemas.VertexCreate,
-    db:AsyncSession = Depends(deps.get_db_async),
-    current_user : models.User = Depends(
-        deps.get_current_superuser_from_cookie_or_basic
-    )
+@router.get("/vertices/{vertex_id}/", response_model=schemas.Vertex)
+async def read_vertex(
+    vertex_id: int,
+    db: AsyncSession = Depends(deps.get_db_async),
+    current_user: models.User = Depends(deps.get_current_superuser_from_cookie_or_basic)
 ):
-    return vertex_in
+
+    vertex = await crud.vertex.get_by_id(db=db, vertex_id=vertex_id)
+
+    if not vertex:
+        raise HTTPException(status_code=404, detail="Vertex not found")
+
+    return vertex
 
 
 @router.delete("/{id}")
