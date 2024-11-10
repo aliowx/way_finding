@@ -21,8 +21,8 @@ async def create_super_admin(db: AsyncSession) -> None:
         await crud.user.create(db=db, obj_in=user)
 
 async def get_graph_data(db: AsyncSession) -> tuple[dict, dict]:
-    vertices = await crud.vertex.get_multi(db)  # Call without the 'db=' keyword
-    edges = await crud.edge.get_multi(db)  # Ensure your edge method is also correct
+    vertices = await crud.vertex.get_multi(db) 
+    edges = await crud.edge.get_multi(db)
 
     graph: dict[int, dict[int, float]] = {vertex.id: {} for vertex in vertices}
     coordinates: dict[int, tuple[int, float]] = {
@@ -76,7 +76,7 @@ def angle_between_three_points(
     point_b: tuple[float, float],
     point_c: tuple[float, float],
 ) -> tuple[float, str]:
-    # Convert points to vectors
+
     vector_ab = np.array([point_b[0] - point_a[0], point_b[1] - point_a[1]])
     vector_bc = np.array([point_c[0] - point_b[0], point_c[1] - point_b[1]])
 

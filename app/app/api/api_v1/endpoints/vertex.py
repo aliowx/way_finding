@@ -41,7 +41,7 @@ async def read_vertex(
 
 
 @router.delete("/{id}")
-async def delet_vertax(
+async def delete_vertex(
     db: AsyncSession = Depends(deps.get_db_async),
     current_user : models.User = Depends(
         deps.get_current_superuser_from_cookie_or_basic
