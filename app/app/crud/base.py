@@ -1,5 +1,10 @@
 from datetime import datetime
+<<<<<<< Updated upstream
 from typing import Any, Generic, Sequence, Type, TypeVar, Union
+=======
+from typing import Any, Generic, Sequence, Type, TypeVar, Union, List
+
+>>>>>>> Stashed changes
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
@@ -121,6 +126,27 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             )
         await db.refresh(db_obj)
         return db_obj
+    
+    async def create_multi(
+        self, db: AsyncSession, objs_in: List[CreateSchemaType] | List[dict]
+    ) -> List[ModelType]:
+        for db_obj in objs_in:
+            pass
+        if not isinstance(obj_in, dict):
+            obj_in = jsonable_encoder(obj_in)
+        db_obj = self.model(**obj_in)
+        try:
+            db.add_all(db_obj)
+            await db.commit()
+        except exc.IntegrityError:
+            await db.rollback()
+            raise HTTPException(
+                status_code=409,
+                detail="One or more Resource already exists",
+            )
+        await db.refresh(db_obj)
+        return db_obj
+
 
     async def create_multi(
         self, db: AsyncSession, 
