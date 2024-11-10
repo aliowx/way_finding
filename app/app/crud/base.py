@@ -1,10 +1,6 @@
 from datetime import datetime
-<<<<<<< Updated upstream
-from typing import Any, Generic, Sequence, Type, TypeVar, Union
-=======
 from typing import Any, Generic, Sequence, Type, TypeVar, Union, List
 
->>>>>>> Stashed changes
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel

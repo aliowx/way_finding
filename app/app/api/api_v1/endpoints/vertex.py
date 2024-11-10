@@ -10,7 +10,7 @@ router = APIRouter()
 namespace = "Position"
 
 
-@router.post("/")
+@router.post("/create_vertex/")
 async def create_vertex(
     vertex_in: schemas.VertexCreate,
     db: AsyncSession = Depends(deps.get_db_async),
