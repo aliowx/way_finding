@@ -31,4 +31,3 @@ class TestHealth:
         response_data = schemas.HealthCheck(**response.json())
         assert response_data.services.postgres.ok == True
         assert response_data.services.redis.ok == True
-print('mmd')
