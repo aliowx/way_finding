@@ -11,6 +11,7 @@ from app.core.security import JWTHandler
 
 async def register(db: AsyncSession, user_in: schemas.UserCreate) -> schemas.User:
     user = await crud.user.get_by_email(db=db, email=user_in.email)
+    print(100*'2')
     if user:
         raise exc.AlreadyExistException(
             detail="The user with this username already exists",

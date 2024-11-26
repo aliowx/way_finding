@@ -1,9 +1,7 @@
 import time
-
 from fastapi import APIRouter, Depends, Request, Response
 from redis.asyncio import client
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.api import deps
 from app.api.api_v1 import services
 from app.core.security import JWTHandler

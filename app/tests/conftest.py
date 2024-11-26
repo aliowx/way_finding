@@ -1,12 +1,11 @@
 import asyncio
 import time
 from typing import Generator, AsyncGenerator
-
+from fastapi.testclient import TestClient
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from httpx import AsyncClient
-
 from app.api.deps import get_db_async
 from app.main import app, settings
 from app.db import Base
@@ -14,7 +13,6 @@ from app.crud import crud_user
 from app.core.security import JWTHandler
 from app.db.init_db import init_db
 from app.db import session as db_session
-
 
 ASYNC_SQLALCHEMY_DATABASE_URL = f"sqlite+aiosqlite:///./test.db"
 
@@ -51,7 +49,7 @@ def event_loop(request) -> Generator:  # noqa: indirect usage
 
 
 @pytest_asyncio.fixture(scope="session")
-async def db() -> AsyncSession:
+async def db() -> AsyncSession:  # type: ignore
 
     async with async_session() as session:
         async with async_engine.begin() as connection:
@@ -64,8 +62,9 @@ async def db() -> AsyncSession:
 
 
 @pytest_asyncio.fixture(scope="module")
-async def client() -> AsyncClient:
-    async with AsyncClient(app=app, base_url="http://test") as client:
+async def client(db) -> TestClient:  # type: ignore
+    app.dependency_overrides[get_db_async] = lambda: db
+    async with TestClient(app=app, base_url="http://test") as client:
         yield client
 
 
