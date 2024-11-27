@@ -12,7 +12,6 @@ from cache.util import ONE_DAY_IN_SECONDS
 router = APIRouter()
 namespace = "user"
 
-
 @router.get("/")
 @cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
 async def read_users(

@@ -34,7 +34,7 @@ class TestVertex:
         # normal input
         
         response = await client.post(
-            f"{settings.API_V1_STR}/",
+            f"{settings.API_V1_STR}/create_vertex/",
             json=self.data
         )   
         assert response.status_code == 200
@@ -42,7 +42,7 @@ class TestVertex:
     # duplicate input
     
         response = await client.post(
-            f"{settings.API_V1_STR}/",
+            f"{settings.API_V1_STR}/create_vertex/",
             json=self.data
         )
         assert response.status_code == 409
@@ -54,7 +54,7 @@ class TestVertex:
     )-> None:
         for i in range(10):
             response = await client.post(
-                f'{settings.API_V1_STR}/',
+                f'{settings.API_V1_STR}/create_vertex/',
                 json=self.data
             )    
         try:
@@ -66,5 +66,5 @@ class TestVertex:
         self,
         client: AsyncClient
     )-> None:
-        response = await client.get(f'{settings.API_V1_STR}/')
-        assert response.status_code == 400
+        response = await client.get(f'{settings.API_V1_STR}/create_vertex/')
+        assert response.status_code == 404

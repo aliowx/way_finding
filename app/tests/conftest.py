@@ -2,6 +2,7 @@ import asyncio
 import time
 from typing import Generator, AsyncGenerator
 from fastapi.testclient import TestClient
+from httpx import AsyncClient
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
@@ -62,9 +63,9 @@ async def db() -> AsyncSession:  # type: ignore
 
 
 @pytest_asyncio.fixture(scope="module")
-async def client(db) -> TestClient:  # type: ignore
+async def client(db) -> AsyncClient:  # type: ignore
     app.dependency_overrides[get_db_async] = lambda: db
-    async with TestClient(app=app, base_url="http://test") as client:
+    async with AsyncClient(app=app, base_url="http://test") as client:
         yield client
 
 

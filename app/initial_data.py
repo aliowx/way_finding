@@ -13,7 +13,6 @@ async def create_init_data() -> None:
         await init_db(session)
         # await shortest_path(session)
 
-
 async def main() -> None:
     logger.info("Creating initial data")
     await create_init_data()
