@@ -7,8 +7,8 @@ import asyncio
 from app import crud, schemas
 from app.core.config import settings
 
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
 
 async def create_super_admin(db: AsyncSession) -> None:
     user = await crud.user.get_by_email(db=db, email=settings.FIRST_SUPERUSER)
@@ -19,6 +19,7 @@ async def create_super_admin(db: AsyncSession) -> None:
             is_superuser=True,
         )
         await crud.user.create(db=db, obj_in=user)
+
 
 async def get_graph_data(db: AsyncSession) -> tuple[dict, dict]:
     vertices = await crud.vertex.get_multi(db) 
@@ -31,9 +32,7 @@ async def get_graph_data(db: AsyncSession) -> tuple[dict, dict]:
 
     for edge in edges:
         graph[edge.source_vertex_id][edge.destination_vertex_id] = edge.distance
-
     return graph, coordinates
-
 
 
 def dijkstra(graph: dict[int, dict[int, float]], start_vertex: int):
@@ -121,7 +120,6 @@ def generate_direction(
             f"From vertex {path[i-1]} walk {distance}m to vertex {path[i]}, turn {direction} by {angle:.2f} degrees."
         )
     return directions
-
 
 async def init_db(db: AsyncSession) -> None:
     await create_super_admin(db)
