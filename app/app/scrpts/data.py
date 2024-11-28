@@ -7,7 +7,7 @@ from app.db.session import async_session
 from app import exceptions as exc
 from app.crud.crud_vertex import vertex
 
-df = pd.read_csv(r'/home/ali/Desktop/data1.csv')
+df = pd.read_csv('data1.csv')
 
 async def data(
     *,
