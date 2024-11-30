@@ -7,7 +7,6 @@ import asyncio
 from app import crud, schemas
 from app.core.config import settings
 
-
 logger = logging.getLogger(__name__)
 
 async def create_super_admin(db: AsyncSession) -> None:
@@ -33,7 +32,6 @@ async def get_graph_data(db: AsyncSession) -> tuple[dict, dict]:
     for edge in edges:
         graph[edge.source_vertex_id][edge.destination_vertex_id] = edge.distance
     return graph, coordinates
-
 
 def dijkstra(graph: dict[int, dict[int, float]], start_vertex: int):
     queue: list[tuple[int, int]] = [(0, start_vertex)]
