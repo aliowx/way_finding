@@ -33,6 +33,7 @@ class CRUDVertex(CRUDBase[Vertex, VertexCreate, VertexUpdate]):
         
         response = await db.execute(query)
         return response.scalar_one_or_none()
+<<<<<<< HEAD
 
     async def create_multi(self, db: AsyncSession, vertex_list: list[VertexCreate]):
         vertices = []
@@ -53,4 +54,15 @@ class CRUDVertex(CRUDBase[Vertex, VertexCreate, VertexUpdate]):
         return response.scalars().all()
 
 
+=======
+    async def get_multi(
+        self, db: AsyncSession, skip: int = 0, limit: int = 100
+    ) -> list[Vertex]:
+        query = select(self.model).offset(skip).limit(limit)
+        response = await db.execute(query)  
+        return response.scalars().all()  
+
+
+
+>>>>>>> origin/feature/add-test
 vertex = CRUDVertex(Vertex)

@@ -11,7 +11,7 @@ class Vertex(BaseModel):
     poy: float
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class VertexCreate(BaseModel):
@@ -32,10 +32,10 @@ class VertexUpdate(BaseModel):
     poy: float
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class VertexDelete(BaseModel):
     id: Optional[int] | None = None
     class Config:
-        orm_mode = True
+        from_attributes = True

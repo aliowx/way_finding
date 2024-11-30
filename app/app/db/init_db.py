@@ -3,12 +3,11 @@ import heapq
 import numpy as np
 import math
 from sqlalchemy.ext.asyncio import AsyncSession
-
+import asyncio
 from app import crud, schemas
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
-
 
 async def create_super_admin(db: AsyncSession) -> None:
     user = await crud.user.get_by_email(db=db, email=settings.FIRST_SUPERUSER)
@@ -22,19 +21,17 @@ async def create_super_admin(db: AsyncSession) -> None:
 
 
 async def get_graph_data(db: AsyncSession) -> tuple[dict, dict]:
-    vertices = await crud.vertex.get_multi(db=db)
-    edges = await crud.edge.get_multi(db=db)
+    vertices = await crud.vertex.get_multi(db) 
+    edges = await crud.edge.get_multi(db)
 
     graph: dict[int, dict[int, float]] = {vertex.id: {} for vertex in vertices}
     coordinates: dict[int, tuple[int, float]] = {
-        vertex.id: (vertex.x, vertex.y) for vertex in vertices
-    }
+        vertex.id: (vertex.startx, vertex.starty, vertex.endx, vertex.endy) for vertex in vertices
+        }
 
     for edge in edges:
         graph[edge.source_vertex_id][edge.destination_vertex_id] = edge.distance
-
     return graph, coordinates
-
 
 def dijkstra(graph: dict[int, dict[int, float]], start_vertex: int):
     queue: list[tuple[int, int]] = [(0, start_vertex)]
@@ -76,7 +73,7 @@ def angle_between_three_points(
     point_b: tuple[float, float],
     point_c: tuple[float, float],
 ) -> tuple[float, str]:
-    # Convert points to vectors
+
     vector_ab = np.array([point_b[0] - point_a[0], point_b[1] - point_a[1]])
     vector_bc = np.array([point_c[0] - point_b[0], point_c[1] - point_b[1]])
 
@@ -122,7 +119,6 @@ def generate_direction(
         )
     return directions
 
-
 async def init_db(db: AsyncSession) -> None:
     await create_super_admin(db)
 
@@ -137,3 +133,6 @@ async def shortest_path(db: AsyncSession) -> None:
     )
     directions = generate_direction(find_path, coordinates=coordinates, graph=graph)
     print(directions)
+
+if __name__== "__main__":
+    asyncio.run(shortest_path(db=AsyncSession))

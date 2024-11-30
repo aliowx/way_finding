@@ -1,13 +1,11 @@
 import logging
 import secrets
 from typing import AsyncGenerator
-
 from fastapi.security import HTTPBasicCredentials
 import redis.asyncio as redis
 from fastapi import Depends, Request, Response
 from redis.asyncio import client
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from app import crud
 from app import exceptions as exc
 from app import models, schemas, utils
@@ -20,12 +18,15 @@ from app.core.config import (
 from app.core.security import JWTHandler, basic_security
 from app.db.session import async_session
 
+
 logger = logging.getLogger(__name__)
 
 
 async def get_db_async() -> AsyncGenerator:
     """
+    
     Dependency function for get database
+    
     """
     async with async_session() as session:
         yield session
@@ -52,7 +53,9 @@ async def get_user_id_from_cookie(
 ):
     try:
         access_token = request.cookies.get("Access-Token")
+
         if not access_token:
+            
             raise exc.UnauthorizedException(
                 msg_code=utils.MessageCodes.access_token_not_found,
             )
@@ -207,6 +210,7 @@ async def get_current_user_from_cookie_or_basic(
         current_user_id_from_cookie = await get_user_id_from_cookie(
             request=request, response=response, cache=cache
         )
+
         current_user = await crud.user.get(db=db, id_=current_user_id_from_cookie)
     except:
 
@@ -218,7 +222,6 @@ async def get_current_user_from_cookie_or_basic(
             )
         except:
             pass
-
     if not current_user or not crud.user.is_active(current_user):
         raise exc.UnauthorizedException(
             msg_code=utils.MessageCodes.not_authorized,
