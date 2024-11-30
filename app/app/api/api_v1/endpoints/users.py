@@ -51,9 +51,11 @@ async def update_user(
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user_from_cookie_or_basic),
 ) -> APIResponseType[schemas.User]:
+    
     """
     Update a user.
     """
+    
     response = await services.update_user(
         db=db, user_id=user_id, user_in=user_in, current_user=current_user
     )

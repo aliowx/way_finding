@@ -4,11 +4,12 @@ from app import schemas, utils
 from app import exceptions as exc
 from app import crud 
 
-
-async def register_position(
-        db:AsyncSession,
-        input:schemas.VertexCreate
-):
+async def create_vertex(
+    db: AsyncSession,
+    input: schemas.VertexCreate
+    
+)-> schemas.VertexCreate:
+    
     vertex = await crud.vertex.get_(
         db=db,
         endx=input.endx,
@@ -23,5 +24,5 @@ async def register_position(
             detail="this position is already exist ",
             msg_code=utils.MessageCodes.bad_request,
         )
-    
-    return await crud.vertex.create(db=db,obj_in=input)
+        
+    return await crud.vertex.create(db=db, obj_in=input)

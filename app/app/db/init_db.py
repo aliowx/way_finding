@@ -27,8 +27,8 @@ async def get_graph_data(db: AsyncSession) -> tuple[dict, dict]:
 
     graph: dict[int, dict[int, float]] = {vertex.id: {} for vertex in vertices}
     coordinates: dict[int, tuple[int, float]] = {
-        vertex.id: (vertex.x, vertex.y) for vertex in vertices
-    }
+        vertex.id: (vertex.startx, vertex.starty, vertex.endx, vertex.endy) for vertex in vertices
+        }
 
     for edge in edges:
         graph[edge.source_vertex_id][edge.destination_vertex_id] = edge.distance
