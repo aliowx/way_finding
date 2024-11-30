@@ -36,7 +36,4 @@ async def read_users(
     return position
 
 
-@router.delete("/{id}")
-async def delet_vertax(db: AsyncSession = Depends(deps.get_db_async), *, id: int):
-    x_ = await crud.vertex.remove(db, id_=id)
-    return x_
+
