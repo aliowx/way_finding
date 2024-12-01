@@ -13,12 +13,10 @@ async def create_init_data() -> None:
         # await init_db(session)
         await shortest_path(session)
 
-
 async def main() -> None:
     logger.info("Creating initial data")
     await create_init_data()
     logger.info("Initial data created")
-
 
 if __name__ == "__main__":
     asyncio.run(main())

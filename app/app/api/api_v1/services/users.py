@@ -10,7 +10,9 @@ async def read_user_by_id(
     user_id: int,
     current_user: models.User,
     db: AsyncSession,
+    
 ) -> schemas.User:
+    
     user = await crud.user.get(db, id_=user_id)
     if not user:
         raise exc.NotFoundException(
