@@ -3,3 +3,4 @@ from .user import User
 from .vertex import Vertex
 from .edge import Edge
 
+from .Bot import Bot
