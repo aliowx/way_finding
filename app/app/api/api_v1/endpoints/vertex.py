@@ -1,12 +1,7 @@
-<<<<<<< HEAD
-from fastapi import APIRouter, HTTPException, Depends 
-=======
-from fastapi import APIRouter, Depends, HTTPException
->>>>>>> origin/feature/add-test
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from app import crud, models, schemas
 from app.api import deps
-<<<<<<< HEAD
 from sqlalchemy import select
 from app import exceptions as exc
 from app import schemas
@@ -31,38 +26,36 @@ async def create_vertax(
     return new_vertex
 
 
-@router.get("/")
-async def read_users(
-=======
-from app import schemas
-from app.api.api_v1.services import vertex
-from app.utils import APIResponse, APIResponseType
-
-
 router = APIRouter()
 namespace = "Position"
+
 
 
 @router.post("/create_vertex/")
 async def create_vertex(
     vertex_in: schemas.VertexCreate,
->>>>>>> origin/feature/add-test
+
     db: AsyncSession = Depends(deps.get_db_async),
-    _: models.User = Depends(deps.get_current_superuser_from_cookie_or_basic)
-       
-)-> APIResponseType[schemas.Vertex]:
+    *,
+    vertex_in: schemas.VertexCreate,
+):
+
+    result = await db.execute(
+        select(crud.vertex.model).filter_by(x=vertex_in.x, y=vertex_in.y)
+    )
+    existing_vertex = result.scalars().first()
+    if existing_vertex:
+        raise exc.AlreadyExistException(
+            detail="The position already exists!",
+            msg_code=utils.MessageCodes.bad_request,
+        )
+    existing_vertex = await crud.vertex.create(db, obj_in=vertex_in)
+    return existing_vertex
     
-    response = await vertex.create_vertex(db=db, input=vertex_in)
-    
-    return APIResponse[response]
 
-
-<<<<<<< HEAD
-
-=======
-@router.get("/vertices/{vertex_id}/", response_model=schemas.Vertex)
-async def read_vertex(
-    vertex_id: int,
+@router.get("/")
+@cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
+async def read_users(
     db: AsyncSession = Depends(deps.get_db_async),
     _: models.User = Depends(deps.get_current_superuser_from_cookie_or_basic)
     
@@ -82,4 +75,3 @@ async def delete_vertex(
 ):
     response = await crud.vertex.remove(db, id_=id)
     return response
->>>>>>> origin/feature/add-test
