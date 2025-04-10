@@ -1,5 +1,4 @@
 import time
-
 from redis.asyncio import client
 from sqlalchemy.ext.asyncio import AsyncSession
 from app import crud
@@ -7,11 +6,16 @@ from app import exceptions as exc
 from app import schemas, utils
 from app.core.config import REFRESH_TOKEN_BLOCKLIST_KEY, ACCESS_TOKEN_BLOCKLIST_KEY
 from app.core.security import JWTHandler
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 async def register(db: AsyncSession, user_in: schemas.UserCreate) -> schemas.User:
+    logger.info(f"Attempting to register user: {user_in.email}")
     user = await crud.user.get_by_email(db=db, email=user_in.email)
     if user:
+        logger.warning(f"User already exists: {user_in.email}")
         raise exc.AlreadyExistException(
             detail="The user with this username already exists",
             msg_code=utils.MessageCodes.bad_request,
