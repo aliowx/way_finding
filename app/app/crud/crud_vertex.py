@@ -17,7 +17,7 @@ class CRUDVertex(CRUDBase[Vertex, VertexCreate, VertexUpdate]):
         starty: float,
         pox: float,
         poy: float,
-    ) -> Vertex | None:
+    ) -> Vertex | None:...
 
     async def get_(
         self,

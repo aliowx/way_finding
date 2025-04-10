@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 async def create_init_data() -> None:
     async with async_session() as session:
-        # await init_db(session)
-        await shortest_path(session)
+        await init_db(session)
+        # await shortest_path(session)
 
 
 async def main() -> None:
