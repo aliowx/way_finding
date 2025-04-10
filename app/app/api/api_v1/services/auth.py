@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 async def register(db: AsyncSession, user_in: schemas.UserCreate) -> schemas.User:
     logger.info(f"Attempting to register user: {user_in.email}")
     user = await crud.user.get_by_email(db=db, email=user_in.email)
+    print(user)
     if user:
         logger.warning(f"User already exists: {user_in.email}")
         raise exc.AlreadyExistException(
@@ -21,6 +22,8 @@ async def register(db: AsyncSession, user_in: schemas.UserCreate) -> schemas.Use
             msg_code=utils.MessageCodes.bad_request,
         )
     user = await crud.user.create(db=db, obj_in=user_in)
+    if not user:
+        print("there isn't any user ")
     return user
 
 

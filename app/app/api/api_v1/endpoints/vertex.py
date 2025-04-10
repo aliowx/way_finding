@@ -8,8 +8,9 @@ from app import exceptions as exc
 from sqlalchemy import select
 from app import exceptions as exc
 from app import schemas
-from app.api.api_v1.services.vertex import VertexService 
+from app.api.api_v1.services.vertex import create_vertex 
 from app.api.api_v1.services import vertex
+from app.utils import APIResponse, APIResponseType
 
 router = APIRouter()
 namespace = "Position"
@@ -38,12 +39,9 @@ namespace = "Position"
 @router.post("/create_vertex/")
 async def create_vertex(
     vertex_in: schemas.VertexCreate,
-
-    db: AsyncSession = Depends(deps.get_db_async),
-    *,
-    vertex_in: schemas.VertexCreate,
+    db: AsyncSession = Depends(deps.get_db_async)
 ):
-    vertx_servis = VertexService(db)
+    vertx_servis = create_vertex(db)
 
     try:
         new_vertex = await vertx_servis.register_position(
