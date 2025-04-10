@@ -1,4 +1,4 @@
-# fastapi-postgres-boilerplate
+# fastapi-postgres
 This project template which uses FastAPi, Alembic, SQLAlchemy as ORM, Rocketry as scheduler, Celery as async task manager. It shows a complete async CRUD template. Also I setup cache app with invalidate feature. 
 
 ## Local Development with Poetry:
