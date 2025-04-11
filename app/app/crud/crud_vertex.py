@@ -19,6 +19,7 @@ class CRUDVertex(CRUDBase[Vertex, VertexCreate, VertexUpdate]):
         poy: float,
     ) -> Vertex | None:...
 
+    async def get_by_id(db,vertex_id)->None:...
     async def get_(
         self,
         db: AsyncSession,
