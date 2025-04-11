@@ -1,21 +1,25 @@
 version: "3"
 services:
   db:
-    image: dr2.parswitch.com/devops/postgres:14
+    image: postgres:14
     container_name: postgres
     restart: always
     volumes:
       - ./data:/var/lib/postgresql/data
     env_file:
-      - .env
+      - .env 
     ports:
       - 5433:5432
     environment:
       - PGDATA=/var/lib/postgresql/data
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456789
+      - POSTGRES_DB=way_finding
 
   redis:
-    image: dr2.parswitch.com/devops/redis:7
+    image: redis:7
     container_name: redis
     restart: always
     ports:
       - 6380:6379
+
