@@ -81,8 +81,8 @@ if settings.BACKEND_CORS_ORIGINS:
 
 
 if os.path.exists("static"):
-    app.mount("/static", StaticFiles(directory="./app/static"), name="static")
-app.mount("/static", StaticFiles(directory="./app/static"), name="static")
+    app.mount("/static", StaticFiles(directory=".app/app/static"), name="static")
+app.mount("/static", StaticFiles(directory=".app/app/static"), name="static")
 app.include_router(api_router, prefix=settings.API_V1_STR)
 app.add_middleware(GetAcceptLanguageMiddleware)
 
