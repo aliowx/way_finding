@@ -1,27 +1,46 @@
-FROM dr2.parswitch.com/devops/python:3-10
-WORKDIR /app/
-ENV PYTHONPATH=/app
+FROM python:3.10-slim
 
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+# Set working directory
+WORKDIR /app
 
-COPY ./app/pyproject.toml ./app/poetry.lock /app/
+# Set timezone (optional)
+ENV TZ=Asia/Tehran
+RUN apt-get update && apt-get install -y tzdata && \
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# Install Poetry version 1
-RUN pip install poetry fastapi uvicorn gunicorn
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    gcc \
+    libpq-dev \
+    python3-venv \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Poetry
+ENV POETRY_VERSION=1.8.2
+RUN curl -sSL https://install.python-poetry.org | python3 - && \
+    ln -s /root/.local/bin/poetry /usr/local/bin/poetry
+
+# Disable Poetry virtualenvs
 RUN poetry config virtualenvs.create false
-# Copy poetry.lock* in case it doesn't exist in the repo
+
+# Copy dependency files first for caching
 COPY ./app/pyproject.toml ./app/poetry.lock* /app/
-RUN poetry export -f requirements.txt --without-hashes --output /app/requirements.txt
-RUN pip install -r requirements.txt
 
-# Install Poetry version 2
-# RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python && \
-#     cd /usr/local/bin && \
-#     ln -s /opt/poetry/bin/poetry && \
-#     poetry config virtualenvs.create false
+# Install dependencies
+RUN poetry install --no-interaction --no-root
 
-# Copy poetry.lock* in case it doesn't exist in the repo
+# Copy the rest of the code
+COPY ./app /app
+COPY ./start-server.sh /start-server.sh
+COPY ./gunicorn_conf.py /gunicorn_conf.py
 
-COPY ./gunicorn_conf.py ./start-server.sh  /
-COPY ./app .
-CMD [ "/bin/bash", "/start-server.sh" ]
+# Set permissions
+RUN chmod +x /start-server.sh
+
+# Expose port
+EXPOSE 8000
+
+# Run the server
+CMD ["/bin/bash", "/start-server.sh"]
