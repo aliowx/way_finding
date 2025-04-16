@@ -1,32 +1,45 @@
 name: Run Tests
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v2
         with:
           python-version: '3.10'
 
-      - name: Install Poetry
+      - name: Set environment variables
         run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          echo "PROJECT_NAME=way_finding" >> $GITHUB_ENV
+          echo "FIRST_SUPERUSER=first@gmail.com" >> $GITHUB_ENV
+          echo "FIRST_SUPERUSER_PASSWORD=password" >> $GITHUB_ENV
+          echo "BACKEND_CORS_ORIGINS=http://localhost:8080,http://localhost:8000" >> $GITHUB_ENV
+          echo "SECRET_KEY=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJzYW1mYWE" >> $GITHUB_ENV
+          echo "DEBUG=False" >> $GITHUB_ENV
+          echo "POSTGRES_ASYNC_URI=postgresql+asyncpg://postgres:123456789@localhost:5432/way_finding" >> $GITHUB_ENV
+          echo "REDIS_URI=redis://127.0.0.1:6379" >> $GITHUB_ENV
+          echo "ACCESS_TOKEN_EXPIRE_MINUTES=60" >> $GITHUB_ENV
+          echo "REFRESH_TOKEN_EXPIRE_MINUTES=1440" >> $GITHUB_ENV
+          echo "HEALTH_USERNAME=username" >> $GITHUB_ENV
+          echo "HEALTH_PASSWORD=password" >> $GITHUB_ENV
+          echo "PYTHONPATH='/home/ali/way-finding-backend/app'" >> $GITHUB_ENV
 
-      - name: Install dependencies with Poetry
-        working-directory: app
+      - name: Install dependencies
         run: |
-          poetry config virtualenvs.create false
+          python -m pip install --upgrade pip
+          pip install poetry
           poetry install
 
-      - name: Run tests
-        working-directory: app
+      - name: Run tests with pytest
         run: |
           poetry run pytest
