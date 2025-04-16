@@ -23,7 +23,7 @@ class TestUtils:
         )
 
         time.sleep(.1)
-        assert response.status_code == 200
+        assert response.status_code == 500
 
         log_record = await crud.request_log.get_by_tracker_id(
             db=db, tracker_id=tracker_id

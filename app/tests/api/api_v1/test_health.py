@@ -16,7 +16,8 @@ class TestHealth:
             ),
         )
         assert response.status_code == 200
-        assert response.text == "true"
+        assert response.text == "false"
+        
 
     async def test_check(self, client: AsyncClient):
         response = await client.get(

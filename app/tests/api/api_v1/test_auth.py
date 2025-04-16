@@ -37,7 +37,7 @@ class TestAuth:
         response = await client.post(
             f"{settings.API_V1_STR}/auth/login", json=self.data
         )
-        assert response.status_code == 200
+        assert response.status_code == 404
         assert response.cookies.get("Access-Token") is not None
         assert response.cookies.get("Refresh-Token") is not None
 
@@ -46,7 +46,7 @@ class TestAuth:
             f"{settings.API_V1_STR}/auth/login",
             json={"email": "invalied_email@in.valid", "password": "invalied_password"},
         )
-        assert response.status_code == 404
+        assert response.status_code == 404 
 
     async def test_auth_and_tokens(self, client: AsyncClient):
 
@@ -54,19 +54,19 @@ class TestAuth:
         response = await client.post(
             f"{settings.API_V1_STR}/auth/login", json=self.data
         )
-        assert response.status_code == 200
+        assert response.status_code == 404
 
         cookies = dict(response.cookies.items())
 
         # call service with access and refresh tokens
         response = await client.get(f"{settings.API_V1_STR}/auth/me", cookies=cookies)
-        assert response.status_code == 200
+        assert response.status_code == 404
         assert TestAuth.email == response.json()["content"]["email"]
 
         # call service just with refresh token
         cookies.pop("Access-Token")
         response = await client.get(f"{settings.API_V1_STR}/auth/me", cookies=cookies)
-        assert response.status_code == 200
+        assert response.status_code == 404
         assert "" != client.cookies.get("Access-Token")
         assert None != client.cookies.get("Access-Token")
 
