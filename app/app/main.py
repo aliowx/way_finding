@@ -20,6 +20,8 @@ from cache import Cache
 
 import os
 
+current_dir = os.path.dirname(__file__)
+static_dir = os.path.join(current_dir, "static")
 
 def init_logger():
     logger = logging.getLogger()
@@ -79,11 +81,7 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-
-if os.path.exists("static"):
-    app.mount("/static", StaticFiles(directory=".app/app/static"), name="static")
-app.mount("/static", StaticFiles(directory=".app/app/static"), name="static")
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
 app.include_router(api_router, prefix=settings.API_V1_STR)
 app.add_middleware(GetAcceptLanguageMiddleware)
-
-# app.mount("/static", StaticFiles(directory="./static"), name="static")
