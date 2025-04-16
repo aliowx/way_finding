@@ -1,37 +1,30 @@
-name: Run tests with Poetry
+name: Docker Image CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "main" ]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+    
+    # Set up Poetry
+    - name: Set up Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Install Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-      - name: Configure Poetry
-        run: |
-          poetry config virtualenvs.create false
-
-      - name: Install dependencies
-        run: |
-          poetry install --no-interaction --no-root
-
-      - name: Run tests
-        run: |
-          poetry run pytest
+    # Navigate to the 'app' directory where pyproject.toml is located
+    - name: Install dependencies with Poetry
+      run: |
+        cd app  # Change to the app directory where pyproject.toml is located
+        poetry install --no-interaction --no-root
+    
+    # Build the Docker image
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
