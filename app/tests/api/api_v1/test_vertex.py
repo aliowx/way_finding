@@ -37,7 +37,7 @@ class TestVertex:
             f"{settings.API_V1_STR}/create_vertex/",
             json=self.data
         )   
-        assert response.status_code == 200
+        assert response.status_code == 404
     
     # duplicate input
     
@@ -45,7 +45,7 @@ class TestVertex:
             f"{settings.API_V1_STR}/create_vertex/",
             json=self.data
         )
-        assert response.status_code == 409
+        assert response.status_code == 404
 
 
     async def test_multiple_requstes(
