@@ -28,4 +28,5 @@ jobs:
 
       - name: Run tests
         working-directory: app
-        run: make test
+        run: |
+          pytest
