@@ -3,8 +3,6 @@ FROM python:3.10-slim
 # Set working directory
 WORKDIR /app
 
-# Set timezone (optional)
-ENV TZ=Asia/Tehran
 RUN apt-get update && apt-get install -y tzdata && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
